@@ -114,7 +114,6 @@ const createWindow = async () => {
 
   ipcMain.on('list-tree-file', (event) => {
     const tree = readFileTree('G:/写作/workspace');
-    console.log(tree);
     event.reply('list-tree-file', tree);
   });
 
