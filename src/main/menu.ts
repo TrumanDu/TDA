@@ -5,6 +5,12 @@ import {
   BrowserWindow,
   MenuItemConstructorOptions,
 } from 'electron';
+import {
+  newDirectory,
+  newFile,
+  newMarkdownFile,
+  readFileTree,
+} from './filesystem';
 
 interface DarwinMenuItemConstructorOptions extends MenuItemConstructorOptions {
   selector?: string;
@@ -52,19 +58,33 @@ export default class MenuBuilder {
     });
   }
 
-  buildDefaultContextMenu = (event: any) => {
+  reloadTreeData = (APPLICATION_PATH: string) => {
+    const tree = readFileTree(APPLICATION_PATH);
+    this.mainWindow.webContents.send('list-tree-file', tree);
+  };
+
+  buildDefaultContextMenu = (event: any, APPLICATION_PATH: string) => {
     const template = [
       {
         label: 'New Markdown',
         click: () => {
-          console.log('New Markdown');
+          newFile(APPLICATION_PATH, 'md');
+          this.reloadTreeData(APPLICATION_PATH);
+        },
+      },
+      {
+        label: 'New Directory',
+        click: () => {
+          newDirectory(APPLICATION_PATH);
+          this.reloadTreeData(APPLICATION_PATH);
         },
       },
       { type: 'separator' },
       {
         label: 'New Mind Map',
         click: () => {
-          console.log('New Mind Map');
+          newFile(APPLICATION_PATH, 'mind');
+          this.reloadTreeData(APPLICATION_PATH);
         },
       },
     ];

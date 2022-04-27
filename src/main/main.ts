@@ -9,12 +9,19 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
+import os from 'os';
 import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
-import { readFileTree } from './filesystem';
+import { createDir, readFileTree } from './filesystem';
+
+const APPLICATION_PATH = path.join(os.homedir(), 'tda');
+
+const init = () => {
+  createDir(APPLICATION_PATH);
+};
 
 export default class AppUpdater {
   constructor() {
@@ -58,6 +65,9 @@ const installExtensions = async () => {
 };
 
 const createWindow = async () => {
+  // 初始化目录
+  await init();
+
   if (isDevelopment) {
     await installExtensions();
   }
@@ -113,12 +123,12 @@ const createWindow = async () => {
   new AppUpdater();
 
   ipcMain.on('list-tree-file', (event) => {
-    const tree = readFileTree('G:/写作/workspace');
+    const tree = readFileTree(APPLICATION_PATH);
     event.reply('list-tree-file', tree);
   });
 
   ipcMain.on('show-context-menu', (event) => {
-    menuBuilder.buildDefaultContextMenu(event);
+    menuBuilder.buildDefaultContextMenu(event, APPLICATION_PATH);
   });
 };
 

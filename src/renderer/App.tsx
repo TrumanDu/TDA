@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Button,
   Layout,
@@ -18,65 +19,11 @@ import {
   IconSetting,
   IconPlusStroked,
   IconListView,
+  IconFile,
+  IconFolder,
 } from '@douyinfe/semi-icons';
 import TreeNode from '@douyinfe/semi-ui/lib/es/tree/treeNode';
 import { useEffect, useState } from 'react';
-
-/* const treeData = [
-  {
-    label: 'Asia',
-    value: 'Asia',
-    key: '0',
-    children: [
-      {
-        label: 'China',
-        value: 'China',
-        key: '0-0',
-        children: [
-          {
-            label: 'Beijing',
-            value: 'Beijing',
-            key: '0-0-0',
-          },
-          {
-            label: 'Shanghai',
-            value: 'Shanghai',
-            key: '0-0-1',
-          },
-        ],
-      },
-      {
-        label: 'Japan',
-        value: 'Japan',
-        key: '0-1',
-        children: [
-          {
-            label: 'Osaka',
-            value: 'Osaka',
-            key: '0-1-0',
-          },
-        ],
-      },
-    ],
-  },
-  {
-    label: 'North America',
-    value: 'North America',
-    key: '1',
-    children: [
-      {
-        label: 'United States',
-        value: 'United States',
-        key: '1-0',
-      },
-      {
-        label: 'Canada',
-        value: 'Canada',
-        key: '1-1',
-      },
-    ],
-  },
-]; */
 
 const setting = (
   <Tooltip content="系统设置" position="right" key="setting">
@@ -98,6 +45,33 @@ const showContextmenu = (event: any, node: TreeNode) => {
   }
 };
 
+const buildTreeData = (oldData: any[]): any[] => {
+  const treeData: any[] = [];
+  if (oldData.length === 0) {
+    return treeData;
+  }
+  oldData.forEach((item) => {
+    if (item.isDir) {
+      treeData.push({
+        icon: <IconFolder style={{ color: 'var(--semi-color-text-2)' }} />,
+        children: buildTreeData(item.children),
+        key: item.key,
+        label: item.label,
+        value: item.value,
+      });
+    } else {
+      treeData.push({
+        icon: <IconFile style={{ color: 'var(--semi-color-text-2)' }} />,
+        key: item.key,
+        label: item.label,
+        value: item.value,
+      });
+    }
+  });
+
+  return treeData;
+};
+
 const Home = () => {
   const { Sider } = Layout;
   const [treeData, setTreeData] = useState([]);
@@ -105,7 +79,7 @@ const Home = () => {
   useEffect(() => {
     window.electron.ipcRenderer.loadTreeData();
     window.electron.ipcRenderer.on('list-tree-file', (data) => {
-      setTreeData(data);
+      setTreeData(buildTreeData(data));
     });
   }, []);
   return (
@@ -196,7 +170,6 @@ const Home = () => {
                 treeData={treeData}
                 filterTreeNode
                 showFilteredOnly
-                directory
               />
               <div
                 onContextMenu={showContextmenu}
