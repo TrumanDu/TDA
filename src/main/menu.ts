@@ -5,12 +5,7 @@ import {
   BrowserWindow,
   MenuItemConstructorOptions,
 } from 'electron';
-import {
-  newDirectory,
-  newFile,
-  newMarkdownFile,
-  readFileTree,
-} from './filesystem';
+import { newDirectory, newFile, readFileTree } from './filesystem';
 
 interface DarwinMenuItemConstructorOptions extends MenuItemConstructorOptions {
   selector?: string;
