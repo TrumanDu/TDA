@@ -15,7 +15,7 @@ import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
-import { createDir, readFileTree } from './filesystem';
+import { createDir, readFileTree } from './file';
 
 const APPLICATION_PATH = path.join(os.homedir(), 'tda');
 

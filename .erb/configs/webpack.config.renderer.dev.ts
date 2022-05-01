@@ -162,43 +162,6 @@ const configuration: webpack.Configuration = {
     historyApiFallback: {
       verbose: true,
     },
-<<<<<<< HEAD
-<<<<<<< HEAD
-    setupMiddlewares(middlewares) {
-=======
-    /*  setupMiddlewares(middlewares) {
->>>>>>> 3b43282 (refactor: vscode main debug)
-=======
-    /*  setupMiddlewares(middlewares) {
->>>>>>> 3b43282 (refactor: vscode main debug)
-      console.log('Starting preload.js builder...');
-      const preloadProcess = spawn('npm', ['run', 'start:preload'], {
-        shell: true,
-        stdio: 'inherit',
-      })
-        .on('close', (code: number) => process.exit(code!))
-        .on('error', (spawnError) => console.error(spawnError));
-
-      console.log('Starting Main Process...');
-      spawn('npm', ['run', 'start:main'], {
-        shell: true,
-        stdio: 'inherit',
-      })
-        .on('close', (code: number) => {
-          preloadProcess.kill();
-          process.exit(code!);
-        })
-        .on('error', (spawnError) => console.error(spawnError));
-      return middlewares;
-<<<<<<< HEAD
-<<<<<<< HEAD
-    },
-=======
-    }, */
->>>>>>> 3b43282 (refactor: vscode main debug)
-=======
-    }, */
->>>>>>> 3b43282 (refactor: vscode main debug)
   },
 };
 

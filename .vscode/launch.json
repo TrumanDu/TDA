@@ -7,23 +7,9 @@
       "request": "launch",
       "protocol": "inspector",
       "runtimeExecutable": "npm",
-<<<<<<< HEAD
-<<<<<<< HEAD
-      "runtimeArgs": [
-        "run start:main --inspect=5858 --remote-debugging-port=9223"
-=======
-=======
->>>>>>> 3b43282 (refactor: vscode main debug)
-      /*  "runtimeArgs": [
-        "run start:main --inspect=5858 --remote-debugging-port=9223"
-      ], */
       "runtimeArgs": [
         "run",
         "start:main:debug"
-<<<<<<< HEAD
->>>>>>> 3b43282 (refactor: vscode main debug)
-=======
->>>>>>> 3b43282 (refactor: vscode main debug)
       ],
       "preLaunchTask": "Start Webpack Dev"
     },
@@ -39,20 +25,10 @@
   "compounds": [
     {
       "name": "Electron: All",
-<<<<<<< HEAD
-<<<<<<< HEAD
-      "configurations": ["Electron: Main", "Electron: Renderer"]
-=======
-=======
->>>>>>> 3b43282 (refactor: vscode main debug)
       "configurations": [
         "Electron: Main",
         "Electron: Renderer"
       ]
-<<<<<<< HEAD
->>>>>>> 3b43282 (refactor: vscode main debug)
-=======
->>>>>>> 3b43282 (refactor: vscode main debug)
     }
   ]
 }
