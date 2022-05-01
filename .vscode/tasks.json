@@ -16,8 +16,15 @@
         },
         "background": {
           "activeOnStart": true,
+<<<<<<< HEAD
           "beginsPattern": "Compiling\\.\\.\\.$",
           "endsPattern": "(Compiled successfully|Failed to compile)\\.$"
+=======
+          "beginsPattern": ".",
+          "endsPattern": "Project is running at:$"
+          /*  "beginsPattern": "Compiling\\.\\.\\.$",
+          "endsPattern": "(Compiled successfully|Failed to compile)\\.$" */
+>>>>>>> 3b43282 (refactor: vscode main debug)
         }
       }
     }
