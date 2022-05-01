@@ -163,7 +163,11 @@ const configuration: webpack.Configuration = {
       verbose: true,
     },
 <<<<<<< HEAD
+<<<<<<< HEAD
     setupMiddlewares(middlewares) {
+=======
+    /*  setupMiddlewares(middlewares) {
+>>>>>>> 3b43282 (refactor: vscode main debug)
 =======
     /*  setupMiddlewares(middlewares) {
 >>>>>>> 3b43282 (refactor: vscode main debug)
@@ -187,7 +191,11 @@ const configuration: webpack.Configuration = {
         .on('error', (spawnError) => console.error(spawnError));
       return middlewares;
 <<<<<<< HEAD
+<<<<<<< HEAD
     },
+=======
+    }, */
+>>>>>>> 3b43282 (refactor: vscode main debug)
 =======
     }, */
 >>>>>>> 3b43282 (refactor: vscode main debug)
