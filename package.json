@@ -218,7 +218,9 @@
     "webpack-merge": "^5.8.0"
   },
   "dependencies": {
-    "@douyinfe/semi-ui": "^2.8.2",
+    "@antv/graphin": "^2.6.5",
+    "@antv/graphin-components": "^2.4.0",
+    "@douyinfe/semi-ui": "^2.9.1",
     "@uiw/react-split": "^5.8.7",
     "electron-debug": "^3.2.0",
     "electron-log": "^4.4.6",

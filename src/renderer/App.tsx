@@ -24,6 +24,7 @@ import {
 } from '@douyinfe/semi-icons';
 import TreeNode from '@douyinfe/semi-ui/lib/es/tree/treeNode';
 import { useEffect, useState } from 'react';
+import MindMap from './MindMap';
 
 const setting = (
   <Tooltip content="系统设置" position="right" key="setting">
@@ -124,7 +125,7 @@ const Home = () => {
           }}
         />
       </Sider>
-      <Layout>
+      <Layout style={{ height: '100vh', overflowY: 'hidden' }}>
         <div>
           <Split
             lineBar
@@ -134,7 +135,7 @@ const Home = () => {
               borderRadius: 3,
             }}
           >
-            <div id="fileTree" style={{ minWidth: '20%', maxWidth: '40%' }}>
+            <div id="fileTree" style={{ minWidth: '10%', maxWidth: '40%' }}>
               <Row
                 style={{
                   marginTop: '5px',
@@ -176,7 +177,9 @@ const Home = () => {
                 style={{ height: '100%', width: '100%' }}
               />
             </div>
-            <div style={{ flex: 1 }}>Right Pane</div>
+            <div style={{ flex: 1 }}>
+              <MindMap />
+            </div>
           </Split>
         </div>
       </Layout>
