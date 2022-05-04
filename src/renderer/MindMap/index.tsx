@@ -1,26 +1,32 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useLayoutEffect, useState } from 'react';
-import Graphin, { Utils } from '@antv/graphin';
+import Graphin, { GraphinContext, Utils } from '@antv/graphin';
 import {
   Button,
   Card,
   Col,
   Divider,
   Dropdown,
+  Input,
   Row,
   Select,
   Space,
   Tooltip,
+  Notification,
 } from '@douyinfe/semi-ui';
 import {
   IconCamera,
+  IconDeleteStroked,
   IconFlowChartStroked,
+  IconPlusStroked,
   IconRealSizeStroked,
   IconWindowAdaptionStroked,
 } from '@douyinfe/semi-icons';
-import { MiniMap } from '@antv/graphin-components';
+import { ContextMenu, MiniMap } from '@antv/graphin-components';
 import { Util } from '@antv/g6-core';
+
+const { Menu } = ContextMenu;
 
 const rawData = {
   label: '我来亲自测试一下文字，看看超出是什么样子的',
@@ -172,13 +178,61 @@ const rawData = {
     },
   ],
 };
+
+const options = [
+  {
+    key: 'add',
+    icon: <IconPlusStroked />,
+    name: 'Sub Topic',
+  },
+  {
+    key: 'delete',
+    icon: <IconDeleteStroked />,
+    name: 'Delete',
+  },
+];
+const removeNodeByParentId = (newData: any, parentId: string, id: string) => {
+  if (parentId === newData.id) {
+    newData.children = newData.children.filter((e: any) => e.id !== id);
+    return;
+  }
+  if (newData.children) {
+    newData.children.forEach((element: any) => {
+      removeNodeByParentId(element, parentId, id);
+    });
+  }
+};
+
 function MindMap() {
   const graphinRef = React.createRef();
 
   const [direction, setDirection] = useState<string>('LR');
+  const [data, setData] = useState(rawData);
 
   const reloadGraphin = () => {
     window.location.reload();
+  };
+  const deleteNode = (id: string) => {
+    if (id === '0') {
+      Notification.warning({
+        title: 'Delete failed',
+        position: 'top',
+        content: 'The root node cannot be deleted',
+        duration: 3,
+      });
+      return;
+    }
+    const parentId = id.substring(0, id.lastIndexOf('-'));
+    const newData = JSON.parse(JSON.stringify(data));
+    removeNodeByParentId(newData, parentId, id);
+    setData(newData);
+    graphinRef.current.graph.refresh();
+  };
+
+  const handleChange = (menuItem: any, menuData: any) => {
+    if (menuItem.key === 'delete') {
+      deleteNode(menuData.id);
+    }
   };
 
   const exportImage = () => {
@@ -202,8 +256,18 @@ function MindMap() {
   return (
     <>
       <Row>
+        <Col>
+          <Input
+            size="large"
+            value="Untitled.mind"
+            style={{ backgroundColor: 'white' }}
+          />
+        </Col>
+      </Row>
+      <Divider />
+      <Row>
         <Col span={24}>
-          <div style={{ marginLeft: 10, marginTop: 10 }}>
+          <div style={{ marginLeft: 10 }}>
             <Space spacing="medium">
               <Tooltip
                 content="Fit Map"
@@ -301,7 +365,7 @@ function MindMap() {
       </Row>
       <Divider margin="12px" />
       <Graphin
-        data={rawData}
+        data={data}
         ref={graphinRef}
         style={{ marginBottom: 20 }}
         fitView
@@ -310,6 +374,18 @@ function MindMap() {
         layout={{
           type: 'compactBox',
           direction,
+          getVGap: () => {
+            return 14;
+          },
+          getHGap: () => {
+            return 50;
+          },
+          getHeight: () => {
+            return 20;
+          },
+          getWidth: () => {
+            return 200;
+          },
         }}
         defaultNode={{
           type: 'rect',
@@ -338,6 +414,9 @@ function MindMap() {
           },
         }}
       >
+        <ContextMenu style={{ width: '120px', color: 'black' }}>
+          <Menu options={options} onChange={handleChange} bindType="node" />
+        </ContextMenu>
         <MiniMap style={{ bottom: 65 }} visible />
       </Graphin>
     </>
