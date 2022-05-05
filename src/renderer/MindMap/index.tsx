@@ -1,3 +1,5 @@
+/* eslint-disable no-underscore-dangle */
+/* eslint-disable no-param-reassign */
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useLayoutEffect, useState } from 'react';
@@ -191,14 +193,30 @@ const options = [
     name: 'Delete',
   },
 ];
-const removeNodeByParentId = (newData: any, parentId: string, id: string) => {
-  if (parentId === newData.id) {
-    newData.children = newData.children.filter((e: any) => e.id !== id);
+
+const addNodeByParentId = (newData: any, id: string, children: any[]) => {
+  if (id === newData.id) {
+    if (newData.children) {
+      children = [
+        {
+          label: 'New',
+          id: `${id}-${newData.children.length + 1}`,
+        },
+        ...newData.children,
+      ];
+    } else {
+      children = [
+        {
+          label: 'New',
+          id: `${id}-1`,
+        },
+      ];
+    }
     return;
   }
   if (newData.children) {
     newData.children.forEach((element: any) => {
-      removeNodeByParentId(element, parentId, id);
+      addNodeByParentId(element, id, children);
     });
   }
 };
@@ -207,31 +225,47 @@ function MindMap() {
   const graphinRef = React.createRef();
 
   const [direction, setDirection] = useState<string>('LR');
-  const [data, setData] = useState(rawData);
 
   const reloadGraphin = () => {
     window.location.reload();
   };
-  const deleteNode = (id: string) => {
-    if (id === '0') {
-      Notification.warning({
-        title: 'Delete failed',
-        position: 'top',
-        content: 'The root node cannot be deleted',
-        duration: 3,
-      });
-      return;
-    }
-    const parentId = id.substring(0, id.lastIndexOf('-'));
-    const newData = JSON.parse(JSON.stringify(data));
-    removeNodeByParentId(newData, parentId, id);
-    setData(newData);
-    graphinRef.current.graph.refresh();
-  };
 
   const handleChange = (menuItem: any, menuData: any) => {
+    const { graph } = graphinRef.current;
+    const item = graph.findById(menuData.id);
     if (menuItem.key === 'delete') {
-      deleteNode(menuData.id);
+      if (menuData.id === '0') {
+        Notification.warning({
+          title: 'Delete failed',
+          position: 'top',
+          content: 'The root node cannot be deleted',
+          duration: 3,
+        });
+        return;
+      }
+
+      graph.removeChild(menuData.id);
+      graph.get('canvas').set('localRefresh', false);
+    }
+    if (menuItem.key === 'add') {
+      const model = item.get('model');
+      const newId = `${model.id}-${
+        ((model.children || []).reduce((a, b) => {
+          const num = Number(b.id.split('-').pop());
+          return a < num ? num : a;
+        }, 0) || 0) + 1
+      }`;
+
+      const children = (model.children || []).concat([
+        {
+          id: newId,
+          label: 'New',
+        },
+      ]);
+
+      model.children = children;
+      graph.updateChild(model, menuData.id);
+      graph.get('canvas').set('localRefresh', false);
     }
   };
 
@@ -249,6 +283,7 @@ function MindMap() {
   useLayoutEffect(() => {
     // 监听
     window.addEventListener('resize', reloadGraphin);
+    fitMap();
     // 销毁
     return () => window.removeEventListener('resize', () => {});
   }, []);
@@ -365,12 +400,11 @@ function MindMap() {
       </Row>
       <Divider margin="12px" />
       <Graphin
-        data={data}
+        data={rawData}
         ref={graphinRef}
         style={{ marginBottom: 20 }}
-        fitView
-        fitCenter
-        fitViewPadding={20}
+        /*  fitView
+        fitViewPadding={20} */
         layout={{
           type: 'compactBox',
           direction,
@@ -417,7 +451,7 @@ function MindMap() {
         <ContextMenu style={{ width: '120px', color: 'black' }}>
           <Menu options={options} onChange={handleChange} bindType="node" />
         </ContextMenu>
-        <MiniMap style={{ bottom: 65 }} visible />
+        <MiniMap style={{ bottom: 90 }} visible />
       </Graphin>
     </>
   );
