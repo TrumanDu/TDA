@@ -2,8 +2,7 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect, useLayoutEffect, useState } from 'react';
-import Graphin, { GraphinContext, Utils } from '@antv/graphin';
+import React, { useLayoutEffect, useState } from 'react';
 import {
   Button,
   Card,
@@ -27,16 +26,17 @@ import {
 } from '@douyinfe/semi-icons';
 import { ContextMenu, MiniMap } from '@antv/graphin-components';
 import { Util } from '@antv/g6-core';
+import Graphin from '@antv/graphin';
 
 const { Menu } = ContextMenu;
 
 const rawData = {
-  label: '我来亲自测试一下文字，看看超出是什么样子的',
+  label: '我来亲自测试一下文字，\n看看超出是什么样子的',
   id: '0',
   style: { fill: 'red' },
   size: [
     Util.getTextSize('我来亲自测试一下文字，看看超出是什么样子的', 14)[0] + 24,
-    20,
+    40,
   ],
   children: [
     {
@@ -181,6 +181,23 @@ const rawData = {
   ],
 };
 
+let colorFlag = 0;
+
+const colorArr = [
+  '#4d94ff',
+  '#ff9000',
+  '#1f8d37',
+  '#1dda70',
+  '#00212b',
+  '#fe695d',
+  '#9b83f8',
+  '#50c4ed',
+  '#c82586',
+  '#f96d15',
+  '#155263',
+  '#52d681',
+];
+
 const options = [
   {
     key: 'add',
@@ -256,10 +273,13 @@ function MindMap() {
         }, 0) || 0) + 1
       }`;
 
+      console.log(model);
+
       const children = (model.children || []).concat([
         {
           id: newId,
           label: 'New',
+          color: model.color || colorArr[colorFlag++ % colorArr.length],
         },
       ]);
 
@@ -280,10 +300,72 @@ function MindMap() {
     graphinRef.current.apis.handleAutoZoom();
   };
 
+  const addDblclickNodeListener = () => {
+    graphinRef.current.graph.on('node:dblclick', (evt) => {
+      const { item } = evt;
+      const model = item.get('model');
+      const { x, y } = item.calculateBBox();
+      const graph = evt.currentTarget;
+      const realPosition = evt.currentTarget.getClientByPoint(x, y);
+      const el = document.createElement('div');
+      el.style.fontSize = '20px';
+      el.style.position = 'fixed';
+      el.style.top = `${realPosition.y}px`;
+      el.style.left = `${realPosition.x}px`;
+      el.style.paddingLeft = '2px';
+      el.style.transformOrigin = 'top left';
+      el.style.transform = `scale(${evt.currentTarget.getZoom()})`;
+      const input = document.createElement('input');
+      input.style.border = 'none';
+      input.value = model.label;
+      input.style.width = `${Util.getTextSize(model.label, 14)[0] + 20}px`;
+      input.style.height = `25px`;
+      input.className = 'dice-input';
+      el.className = 'dice-input';
+      el.appendChild(input);
+      document.body.appendChild(el);
+      input.focus();
+      const destroyEl = () => {
+        document.body.removeChild(el);
+      };
+      const clickEvt = (event) => {
+        if (
+          !(
+            event.target &&
+            event.target.className &&
+            event.target.className.includes('dice-input')
+          )
+        ) {
+          window.removeEventListener('mousedown', clickEvt);
+          window.removeEventListener('scroll', clickEvt);
+          graph.updateItem(item, {
+            label: input.value,
+            size: [Util.getTextSize(input.value, 14)[0] + 24, 28],
+          });
+          graph.layout(false);
+          graph.off('wheelZoom', clickEvt);
+          destroyEl();
+        }
+      };
+      graph.on('wheelZoom', clickEvt);
+      window.addEventListener('mousedown', clickEvt);
+      window.addEventListener('scroll', clickEvt);
+      input.addEventListener('keyup', (event) => {
+        if (event.key === 'Enter') {
+          clickEvt({
+            target: {},
+          });
+        }
+      });
+    });
+  };
+
   useLayoutEffect(() => {
     // 监听
     window.addEventListener('resize', reloadGraphin);
     fitMap();
+    addDblclickNodeListener();
+
     // 销毁
     return () => window.removeEventListener('resize', () => {});
   }, []);
@@ -424,6 +506,10 @@ function MindMap() {
         defaultNode={{
           type: 'rect',
           size: 20,
+          style: {
+            fill: '#fff',
+            lineWidth: 2.5,
+          },
           labelCfg: {
             position: 'center',
             style: {
