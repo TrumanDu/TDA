@@ -211,33 +211,6 @@ const options = [
   },
 ];
 
-const addNodeByParentId = (newData: any, id: string, children: any[]) => {
-  if (id === newData.id) {
-    if (newData.children) {
-      children = [
-        {
-          label: 'New',
-          id: `${id}-${newData.children.length + 1}`,
-        },
-        ...newData.children,
-      ];
-    } else {
-      children = [
-        {
-          label: 'New',
-          id: `${id}-1`,
-        },
-      ];
-    }
-    return;
-  }
-  if (newData.children) {
-    newData.children.forEach((element: any) => {
-      addNodeByParentId(element, id, children);
-    });
-  }
-};
-
 function MindMap() {
   const graphinRef = React.createRef();
 
@@ -273,17 +246,24 @@ function MindMap() {
         }, 0) || 0) + 1
       }`;
 
-      console.log(model);
-
+      const color = model.color || colorArr[colorFlag++ % colorArr.length];
       const children = (model.children || []).concat([
         {
           id: newId,
           label: 'New',
-          color: model.color || colorArr[colorFlag++ % colorArr.length],
+          color,
         },
       ]);
 
       model.children = children;
+      graph.set('defaultEdge', {
+        type: 'cubic-horizontal',
+        style: {
+          stroke: color,
+          cursor: 'default',
+          lineWidth: 1.5,
+        },
+      });
       graph.updateChild(model, menuData.id);
       graph.get('canvas').set('localRefresh', false);
     }
@@ -298,6 +278,10 @@ function MindMap() {
   };
   const fitMap = () => {
     graphinRef.current.apis.handleAutoZoom();
+  };
+
+  const fitView = () => {
+    graphinRef.current.graph.fitView(20);
   };
 
   const addDblclickNodeListener = () => {
@@ -363,7 +347,7 @@ function MindMap() {
   useLayoutEffect(() => {
     // 监听
     window.addEventListener('resize', reloadGraphin);
-    fitMap();
+    fitView();
     addDblclickNodeListener();
 
     // 销毁
@@ -523,6 +507,7 @@ function MindMap() {
           style: {
             stroke: 'rgb(79, 79, 79)',
             cursor: 'default',
+            lineWidth: 1.5,
           },
           labelCfg: {
             position: 'middle',

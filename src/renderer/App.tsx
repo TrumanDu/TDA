@@ -9,22 +9,28 @@ import {
   Col,
 } from '@douyinfe/semi-ui';
 import Split from '@uiw/react-split';
-import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Outlet,
+} from 'react-router-dom';
 
 import './App.css';
 import {
   IconHome,
   IconFlowChartStroked,
-  IconLive,
   IconSetting,
   IconPlusStroked,
   IconListView,
   IconFile,
   IconFolder,
+  IconKanban,
 } from '@douyinfe/semi-icons';
 import TreeNode from '@douyinfe/semi-ui/lib/es/tree/treeNode';
 import { useEffect, useState } from 'react';
 import MindMap from './MindMap';
+import Kanban from './Kanban';
 
 const setting = (
   <Tooltip content="系统设置" position="right" key="setting">
@@ -74,8 +80,74 @@ const buildTreeData = (oldData: any[]): any[] => {
 };
 
 const Home = () => {
+  const [treeData, setTreeData] = useState([]);
+
+  useEffect(() => {
+    window.electron.ipcRenderer.loadTreeData();
+    window.electron.ipcRenderer.on('list-tree-file', (data) => {
+      setTreeData(buildTreeData(data));
+    });
+  }, []);
+  return (
+    <Split
+      lineBar
+      style={{
+        height: '97vh',
+        border: '1px solid #d5d5d5',
+        borderRadius: 3,
+      }}
+    >
+      <div id="fileTree" style={{ minWidth: '10%', maxWidth: '40%' }}>
+        <Row
+          style={{
+            marginTop: '5px',
+            marginBottom: '5px',
+          }}
+        >
+          <Col span={6} offset={6}>
+            <Button
+              icon={<IconPlusStroked />}
+              theme="solid"
+              style={{ marginRight: 10 }}
+            >
+              New
+            </Button>
+          </Col>
+          <Col span={6} offset={6} style={{ textAlign: 'right' }}>
+            <Button
+              icon={<IconListView />}
+              theme="borderless"
+              type="tertiary"
+            />
+          </Col>
+        </Row>
+        <div
+          style={{
+            width: '100%',
+            height: '1px',
+            borderTop: '1px solid #d5d5d5',
+          }}
+        />
+        <Tree
+          onContextMenu={showContextmenu}
+          treeData={treeData}
+          filterTreeNode
+          showFilteredOnly
+        />
+        <div
+          onContextMenu={showContextmenu}
+          style={{ height: '100%', width: '100%' }}
+        />
+      </div>
+      <div style={{ flex: 1 }}> </div>
+    </Split>
+  );
+};
+
+const AppLayout = () => {
   const { Sider } = Layout;
   const [treeData, setTreeData] = useState([]);
+  const [selectKey] = useState([`${window.location.pathname}`]);
 
   useEffect(() => {
     window.electron.ipcRenderer.loadTreeData();
@@ -95,21 +167,28 @@ const Home = () => {
     >
       <Sider style={{ backgroundColor: 'var(--semi-color-bg-1)' }}>
         <Nav
-          defaultSelectedKeys={['Home']}
+          defaultSelectedKeys={selectKey}
           mode="vertical"
           isCollapsed
           style={{ maxWidth: 220, height: '100%' }}
           items={[
-            { itemKey: 'Home', text: '首页', icon: <IconHome size="large" /> },
             {
-              itemKey: 'Histogram',
-              text: 'MindMap',
-              icon: <IconFlowChartStroked size="large" />,
+              itemKey: '/home',
+              text: '首页',
+              link: 'home',
+              icon: <IconHome size="large" />,
             },
             {
-              itemKey: 'Live',
-              text: '测试功能',
-              icon: <IconLive size="large" />,
+              itemKey: '/mindMap',
+              text: 'MindMap',
+              icon: <IconFlowChartStroked size="large" />,
+              link: 'mindMap',
+            },
+            {
+              itemKey: '/kanban',
+              text: 'Kanban',
+              icon: <IconKanban size="large" />,
+              link: 'kanban',
             },
           ]}
           header={{
@@ -126,62 +205,7 @@ const Home = () => {
         />
       </Sider>
       <Layout style={{ height: '100vh', overflowY: 'hidden' }}>
-        <div>
-          <Split
-            lineBar
-            style={{
-              height: '97vh',
-              border: '1px solid #d5d5d5',
-              borderRadius: 3,
-            }}
-          >
-            <div id="fileTree" style={{ minWidth: '10%', maxWidth: '40%' }}>
-              <Row
-                style={{
-                  marginTop: '5px',
-                  marginBottom: '5px',
-                }}
-              >
-                <Col span={6} offset={6}>
-                  <Button
-                    icon={<IconPlusStroked />}
-                    theme="solid"
-                    style={{ marginRight: 10 }}
-                  >
-                    New
-                  </Button>
-                </Col>
-                <Col span={6} offset={6} style={{ textAlign: 'right' }}>
-                  <Button
-                    icon={<IconListView />}
-                    theme="borderless"
-                    type="tertiary"
-                  />
-                </Col>
-              </Row>
-              <div
-                style={{
-                  width: '100%',
-                  height: '1px',
-                  borderTop: '1px solid #d5d5d5',
-                }}
-              />
-              <Tree
-                onContextMenu={showContextmenu}
-                treeData={treeData}
-                filterTreeNode
-                showFilteredOnly
-              />
-              <div
-                onContextMenu={showContextmenu}
-                style={{ height: '100%', width: '100%' }}
-              />
-            </div>
-            <div style={{ flex: 1 }}>
-              <MindMap />
-            </div>
-          </Split>
-        </div>
+        <Outlet />
       </Layout>
     </Layout>
   );
@@ -191,7 +215,11 @@ export default function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<AppLayout />}>
+          <Route path="home" element={<Home />} />
+          <Route path="mindMap" element={<MindMap />} />
+          <Route path="kanban" element={<Kanban />} />
+        </Route>
       </Routes>
     </Router>
   );
