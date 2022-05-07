@@ -14,6 +14,7 @@ import {
   Routes,
   Route,
   Outlet,
+  useNavigate,
 } from 'react-router-dom';
 
 import './App.css';
@@ -147,7 +148,7 @@ const Home = () => {
 const AppLayout = () => {
   const { Sider } = Layout;
   const [treeData, setTreeData] = useState([]);
-  const [selectKey] = useState([`${window.location.pathname}`]);
+  const [selectKey, setSelectKey] = useState(['home']);
 
   useEffect(() => {
     window.electron.ipcRenderer.loadTreeData();
@@ -155,6 +156,7 @@ const AppLayout = () => {
       setTreeData(buildTreeData(data));
     });
   }, []);
+  const navigate = useNavigate();
   return (
     <Layout
       style={{
@@ -173,22 +175,31 @@ const AppLayout = () => {
           style={{ maxWidth: 220, height: '100%' }}
           items={[
             {
-              itemKey: '/home',
+              itemKey: 'home',
               text: '首页',
-              link: 'home',
               icon: <IconHome size="large" />,
+              onClick: () => {
+                navigate('/home');
+                setSelectKey(['home']);
+              },
             },
             {
-              itemKey: '/mindMap',
+              itemKey: 'mindMap',
               text: 'MindMap',
               icon: <IconFlowChartStroked size="large" />,
-              link: 'mindMap',
+              onClick: () => {
+                navigate('/mindMap');
+                setSelectKey(['mindMap']);
+              },
             },
             {
-              itemKey: '/kanban',
+              itemKey: 'kanban',
               text: 'Kanban',
               icon: <IconKanban size="large" />,
-              link: 'kanban',
+              onClick: () => {
+                navigate('/kanban');
+                setSelectKey(['kanban']);
+              },
             },
           ]}
           header={{
