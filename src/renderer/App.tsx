@@ -179,7 +179,7 @@ const AppLayout = () => {
               text: '首页',
               icon: <IconHome size="large" />,
               onClick: () => {
-                navigate('/home');
+                navigate('/');
                 setSelectKey(['home']);
               },
             },
@@ -227,7 +227,7 @@ export default function App() {
     <Router>
       <Routes>
         <Route path="/" element={<AppLayout />}>
-          <Route path="home" element={<Home />} />
+          <Route index element={<Home />} />
           <Route path="mindMap" element={<MindMap />} />
           <Route path="kanban" element={<Kanban />} />
         </Route>
