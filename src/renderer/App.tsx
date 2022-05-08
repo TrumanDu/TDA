@@ -1,20 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-  Button,
-  Layout,
-  Nav,
-  Tree,
-  Tooltip,
-  Row,
-  Col,
-} from '@douyinfe/semi-ui';
-import Split from '@uiw/react-split';
+import { Button, Layout, Nav, Tooltip } from '@douyinfe/semi-ui';
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   Outlet,
   useNavigate,
+  useLocation,
 } from 'react-router-dom';
 
 import './App.css';
@@ -22,16 +14,12 @@ import {
   IconHome,
   IconFlowChartStroked,
   IconSetting,
-  IconPlusStroked,
-  IconListView,
-  IconFile,
-  IconFolder,
   IconKanban,
 } from '@douyinfe/semi-icons';
-import TreeNode from '@douyinfe/semi-ui/lib/es/tree/treeNode';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import MindMap from './MindMap';
 import Kanban from './Kanban';
+import Home from './Home';
 
 const setting = (
   <Tooltip content="系统设置" position="right" key="setting">
@@ -44,118 +32,12 @@ const setting = (
   </Tooltip>
 );
 
-const showContextmenu = (event: any, node: TreeNode) => {
-  event.preventDefault();
-  if (node) {
-    console.log(node);
-  } else {
-    window.electron.ipcRenderer.showContextMenu('empty');
-  }
-};
-
-const buildTreeData = (oldData: any[]): any[] => {
-  const treeData: any[] = [];
-  if (oldData.length === 0) {
-    return treeData;
-  }
-  oldData.forEach((item) => {
-    if (item.isDir) {
-      treeData.push({
-        icon: <IconFolder style={{ color: 'var(--semi-color-text-2)' }} />,
-        children: buildTreeData(item.children),
-        key: item.key,
-        label: item.label,
-        value: item.value,
-      });
-    } else {
-      treeData.push({
-        icon: <IconFile style={{ color: 'var(--semi-color-text-2)' }} />,
-        key: item.key,
-        label: item.label,
-        value: item.value,
-      });
-    }
-  });
-
-  return treeData;
-};
-
-const Home = () => {
-  const [treeData, setTreeData] = useState([]);
-
-  useEffect(() => {
-    window.electron.ipcRenderer.loadTreeData();
-    window.electron.ipcRenderer.on('list-tree-file', (data) => {
-      setTreeData(buildTreeData(data));
-    });
-  }, []);
-  return (
-    <Split
-      lineBar
-      style={{
-        height: '97vh',
-        border: '1px solid #d5d5d5',
-        borderRadius: 3,
-      }}
-    >
-      <div id="fileTree" style={{ minWidth: '10%', maxWidth: '40%' }}>
-        <Row
-          style={{
-            marginTop: '5px',
-            marginBottom: '5px',
-          }}
-        >
-          <Col span={6} offset={6}>
-            <Button
-              icon={<IconPlusStroked />}
-              theme="solid"
-              style={{ marginRight: 10 }}
-            >
-              New
-            </Button>
-          </Col>
-          <Col span={6} offset={6} style={{ textAlign: 'right' }}>
-            <Button
-              icon={<IconListView />}
-              theme="borderless"
-              type="tertiary"
-            />
-          </Col>
-        </Row>
-        <div
-          style={{
-            width: '100%',
-            height: '1px',
-            borderTop: '1px solid #d5d5d5',
-          }}
-        />
-        <Tree
-          onContextMenu={showContextmenu}
-          treeData={treeData}
-          filterTreeNode
-          showFilteredOnly
-        />
-        <div
-          onContextMenu={showContextmenu}
-          style={{ height: '100%', width: '100%' }}
-        />
-      </div>
-      <div style={{ flex: 1 }}> </div>
-    </Split>
-  );
-};
-
 const AppLayout = () => {
+  const location = useLocation();
   const { Sider } = Layout;
-  const [treeData, setTreeData] = useState([]);
-  const [selectKey, setSelectKey] = useState(['home']);
 
-  useEffect(() => {
-    window.electron.ipcRenderer.loadTreeData();
-    window.electron.ipcRenderer.on('list-tree-file', (data) => {
-      setTreeData(buildTreeData(data));
-    });
-  }, []);
+  const [selectKey, setSelectKey] = useState([location.pathname]);
+
   const navigate = useNavigate();
   return (
     <Layout
@@ -175,30 +57,30 @@ const AppLayout = () => {
           style={{ maxWidth: 220, height: '100%' }}
           items={[
             {
-              itemKey: 'home',
+              itemKey: '/',
               text: '首页',
               icon: <IconHome size="large" />,
               onClick: () => {
                 navigate('/');
-                setSelectKey(['home']);
+                setSelectKey(['/']);
               },
             },
             {
-              itemKey: 'mindMap',
+              itemKey: '/mindMap',
               text: 'MindMap',
               icon: <IconFlowChartStroked size="large" />,
               onClick: () => {
                 navigate('/mindMap');
-                setSelectKey(['mindMap']);
+                setSelectKey(['/mindMap']);
               },
             },
             {
-              itemKey: 'kanban',
+              itemKey: '/kanban',
               text: 'Kanban',
               icon: <IconKanban size="large" />,
               onClick: () => {
                 navigate('/kanban');
-                setSelectKey(['kanban']);
+                setSelectKey(['/kanban']);
               },
             },
           ]}

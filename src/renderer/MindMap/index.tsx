@@ -15,6 +15,9 @@ import {
   Space,
   Tooltip,
   Notification,
+  Tree,
+  List,
+  ButtonGroup,
 } from '@douyinfe/semi-ui';
 import {
   IconCamera,
@@ -23,10 +26,15 @@ import {
   IconPlusStroked,
   IconRealSizeStroked,
   IconWindowAdaptionStroked,
+  IconListView,
+  IconSearch,
 } from '@douyinfe/semi-icons';
 import { ContextMenu, MiniMap } from '@antv/graphin-components';
 import { Util } from '@antv/g6-core';
 import Graphin from '@antv/graphin';
+import Split from '@uiw/react-split';
+
+import './index.css';
 
 const { Menu } = ContextMenu;
 
@@ -211,6 +219,8 @@ const options = [
   },
 ];
 
+const mindList = [{ name: 'a' }, { name: 'a' }, { name: 'a' }];
+
 function MindMap() {
   const graphinRef = React.createRef();
 
@@ -354,177 +364,266 @@ function MindMap() {
     return () => window.removeEventListener('resize', () => {});
   }, []);
 
-  return (
-    <>
-      <Row>
-        <Col>
-          <Input
-            size="large"
-            value="Untitled.mind"
-            style={{ backgroundColor: 'white' }}
-          />
-        </Col>
-      </Row>
-      <Divider />
-      <Row>
-        <Col span={24}>
-          <div style={{ marginLeft: 10 }}>
-            <Space spacing="medium">
-              <Tooltip
-                content="Fit Map"
-                clickToHide
-                motion={false}
-                position="bottom"
-              >
-                <Button
-                  onClick={fitMap}
-                  size="large"
-                  theme="borderless"
-                  type="tertiary"
-                  icon={<IconWindowAdaptionStroked />}
-                />
-              </Tooltip>
-              <Tooltip
-                content="Actual Size"
-                clickToHide
-                motion={false}
-                position="bottom"
-              >
-                <Button
-                  onClick={actualSize}
-                  size="large"
-                  theme="borderless"
-                  type="tertiary"
-                  icon={<IconRealSizeStroked />}
-                />
-              </Tooltip>
-              <Tooltip
-                content="Export image"
-                clickToHide
-                motion={false}
-                position="bottom"
-              >
-                <Button
-                  onClick={exportImage}
-                  size="large"
-                  theme="borderless"
-                  type="tertiary"
-                  icon={<IconCamera />}
-                />
-              </Tooltip>
+  const [mindMapList, setMindMapList] = useState(mindList);
 
-              <Tooltip
-                content="Theme"
-                clickToHide
-                motion={false}
-                position="bottom"
-              >
-                <Dropdown
-                  trigger="click"
+  const onSearch = (search) => {
+    console.log(search);
+    let newList;
+    if (search) {
+      newList = mindList.filter((item) => item.name.includes(search));
+    } else {
+      newList = mindList;
+    }
+    setMindMapList(newList);
+  };
+
+  return (
+    <Split
+      lineBar
+      style={{
+        height: '97vh',
+        border: '1px solid #d5d5d5',
+        borderRadius: 3,
+      }}
+    >
+      <div id="fileTree" style={{ minWidth: '10%', maxWidth: '40%' }}>
+        <Row
+          style={{
+            marginTop: '5px',
+            marginBottom: '5px',
+          }}
+        >
+          <Col span={6} offset={6}>
+            <Button
+              icon={<IconPlusStroked />}
+              theme="solid"
+              style={{ marginRight: 10 }}
+            >
+              New
+            </Button>
+          </Col>
+          <Col span={6} offset={6} style={{ textAlign: 'right' }}>
+            <Button
+              icon={<IconListView />}
+              theme="borderless"
+              type="tertiary"
+            />
+          </Col>
+        </Row>
+        <div
+          style={{
+            width: '100%',
+            height: '1px',
+            borderTop: '1px solid #d5d5d5',
+          }}
+        />
+        <List
+          header={
+            <Input
+              onCompositionEnd={(v) => onSearch(v)}
+              onChange={(v) => (!v ? onSearch(null) : onSearch(v))}
+              placeholder="Search"
+              prefix={<IconSearch />}
+            />
+          }
+          dataSource={mindMapList}
+          renderItem={(item) => (
+            <List.Item
+              main={
+                <div>
+                  <span
+                    style={{
+                      color: 'var(--semi-color-text-0)',
+                      fontWeight: 500,
+                    }}
+                  >
+                    示例标题
+                  </span>
+                </div>
+              }
+              extra={
+                <Button
+                  style={{ display: 'none' }}
+                  theme="borderless"
+                  type="danger"
+                  icon={<IconDeleteStroked />}
+                />
+              }
+            />
+          )}
+        />
+      </div>
+      <div style={{ flex: 1 }}>
+        <Row>
+          <Col>
+            <Input
+              size="large"
+              value="Untitled.mind"
+              style={{ backgroundColor: 'white' }}
+            />
+          </Col>
+        </Row>
+        <Divider />
+        <Row>
+          <Col span={24}>
+            <div style={{ marginLeft: 10 }}>
+              <Space spacing="medium">
+                <Tooltip
+                  content="Fit Map"
+                  clickToHide
+                  motion={false}
                   position="bottom"
-                  render={
-                    <div id="themeCard">
-                      <Card style={{ height: 100 }}>
-                        <span
-                          style={{
-                            color: 'black',
-                            marginLeft: 5,
-                            marginRight: 5,
-                          }}
-                        >
-                          Direction:&nbsp;
-                        </span>
-                        <Select
-                          defaultValue="LR"
-                          value={direction}
-                          onSelect={(v) => setDirection(v as string)}
-                          getPopupContainer={() => {
-                            return document.getElementById('themeCard');
-                          }}
-                        >
-                          <Select.Option value="H">H</Select.Option>
-                          <Select.Option value="V">V</Select.Option>
-                          <Select.Option value="TB">TB</Select.Option>
-                          <Select.Option value="LR">LR</Select.Option>
-                          <Select.Option value="RL">RL</Select.Option>
-                        </Select>
-                      </Card>
-                    </div>
-                  }
                 >
                   <Button
+                    onClick={fitMap}
                     size="large"
                     theme="borderless"
                     type="tertiary"
-                    icon={<IconFlowChartStroked />}
+                    icon={<IconWindowAdaptionStroked />}
                   />
-                </Dropdown>
-              </Tooltip>
-            </Space>
-          </div>
-        </Col>
-      </Row>
-      <Divider margin="12px" />
-      <Graphin
-        data={rawData}
-        ref={graphinRef}
-        style={{ marginBottom: 20 }}
-        /*  fitView
+                </Tooltip>
+                <Tooltip
+                  content="Actual Size"
+                  clickToHide
+                  motion={false}
+                  position="bottom"
+                >
+                  <Button
+                    onClick={actualSize}
+                    size="large"
+                    theme="borderless"
+                    type="tertiary"
+                    icon={<IconRealSizeStroked />}
+                  />
+                </Tooltip>
+                <Tooltip
+                  content="Export image"
+                  clickToHide
+                  motion={false}
+                  position="bottom"
+                >
+                  <Button
+                    onClick={exportImage}
+                    size="large"
+                    theme="borderless"
+                    type="tertiary"
+                    icon={<IconCamera />}
+                  />
+                </Tooltip>
+
+                <Tooltip
+                  content="Theme"
+                  clickToHide
+                  motion={false}
+                  position="bottom"
+                >
+                  <Dropdown
+                    trigger="click"
+                    position="bottom"
+                    render={
+                      <div id="themeCard">
+                        <Card style={{ height: 100 }}>
+                          <span
+                            style={{
+                              color: 'black',
+                              marginLeft: 5,
+                              marginRight: 5,
+                            }}
+                          >
+                            Direction:&nbsp;
+                          </span>
+                          <Select
+                            defaultValue="LR"
+                            value={direction}
+                            onSelect={(v) => setDirection(v as string)}
+                            getPopupContainer={() => {
+                              return document.getElementById('themeCard');
+                            }}
+                          >
+                            <Select.Option value="H">H</Select.Option>
+                            <Select.Option value="V">V</Select.Option>
+                            <Select.Option value="TB">TB</Select.Option>
+                            <Select.Option value="LR">LR</Select.Option>
+                            <Select.Option value="RL">RL</Select.Option>
+                          </Select>
+                        </Card>
+                      </div>
+                    }
+                  >
+                    <Button
+                      size="large"
+                      theme="borderless"
+                      type="tertiary"
+                      icon={<IconFlowChartStroked />}
+                    />
+                  </Dropdown>
+                </Tooltip>
+              </Space>
+            </div>
+          </Col>
+        </Row>
+        <Divider margin="12px" />
+        <Graphin
+          data={rawData}
+          ref={graphinRef}
+          style={{ marginBottom: 20 }}
+          /*  fitView
         fitViewPadding={20} */
-        layout={{
-          type: 'compactBox',
-          direction,
-          getVGap: () => {
-            return 14;
-          },
-          getHGap: () => {
-            return 50;
-          },
-          getHeight: () => {
-            return 20;
-          },
-          getWidth: () => {
-            return 200;
-          },
-        }}
-        defaultNode={{
-          type: 'rect',
-          size: 20,
-          style: {
-            fill: '#fff',
-            lineWidth: 2.5,
-          },
-          labelCfg: {
-            position: 'center',
-            style: {
-              textAlign: 'center',
-              fontStyle: 'normal',
+          layout={{
+            type: 'compactBox',
+            direction,
+            getVGap: () => {
+              return 14;
             },
-          },
-        }}
-        defaultEdge={{
-          type: 'cubic-horizontal',
-          style: {
-            stroke: 'rgb(79, 79, 79)',
-            cursor: 'default',
-            lineWidth: 1.5,
-          },
-          labelCfg: {
-            position: 'middle',
-            style: {
-              textAlign: 'center',
-              textBaseline: 'middle',
-              fontStyle: 'normal',
+            getHGap: () => {
+              return 50;
             },
-          },
-        }}
-      >
-        <ContextMenu style={{ width: '120px', color: 'black' }}>
-          <Menu options={options} onChange={handleChange} bindType="node" />
-        </ContextMenu>
-        <MiniMap style={{ bottom: 90 }} visible />
-      </Graphin>
-    </>
+            getHeight: () => {
+              return 20;
+            },
+            getWidth: () => {
+              return 200;
+            },
+          }}
+          defaultNode={{
+            type: 'rect',
+            size: 20,
+            style: {
+              fill: '#fff',
+              lineWidth: 2.5,
+            },
+            labelCfg: {
+              position: 'center',
+              style: {
+                textAlign: 'center',
+                fontStyle: 'normal',
+              },
+            },
+          }}
+          defaultEdge={{
+            type: 'cubic-horizontal',
+            style: {
+              stroke: 'rgb(79, 79, 79)',
+              cursor: 'default',
+              lineWidth: 1.5,
+            },
+            labelCfg: {
+              position: 'middle',
+              style: {
+                textAlign: 'center',
+                textBaseline: 'middle',
+                fontStyle: 'normal',
+              },
+            },
+          }}
+        >
+          <ContextMenu style={{ width: '120px', color: 'black' }}>
+            <Menu options={options} onChange={handleChange} bindType="node" />
+          </ContextMenu>
+          <MiniMap style={{ bottom: 90 }} visible />
+        </Graphin>
+      </div>
+    </Split>
   );
 }
 

@@ -1,0 +1,15 @@
+li:hover {
+  background-color: var(--semi-color-fill-0);
+}
+
+li:hover button {
+  display: unset !important;
+}
+
+li:focus {
+  background-color: var(--semi-color-fill-0);
+}
+
+li:focus button {
+  display: unset !important;
+}
