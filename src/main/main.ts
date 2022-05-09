@@ -15,7 +15,13 @@ import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
-import { createDir, readFileTree } from './file';
+import {
+  createDir,
+  newMindMapFile,
+  readFileTree,
+  readMindMapFileList,
+  removeFile,
+} from './file';
 
 const APPLICATION_PATH = path.join(os.homedir(), 'tda');
 
@@ -82,8 +88,8 @@ const createWindow = async () => {
 
   mainWindow = new BrowserWindow({
     show: false,
-    width: 1024,
-    height: 728,
+    width: 1400,
+    height: 900,
     icon: getAssetPath('icon.png'),
     webPreferences: {
       preload: app.isPackaged
@@ -129,6 +135,25 @@ const createWindow = async () => {
 
   ipcMain.on('show-context-menu', (event) => {
     menuBuilder.buildDefaultContextMenu(event, APPLICATION_PATH);
+  });
+
+  ipcMain.on('mind-map', (event, command, arg) => {
+    if (command === 'list') {
+      const list = readMindMapFileList(APPLICATION_PATH, 'MindMap');
+      event.reply('list-mind-map-file', list);
+    }
+    if (command === 'new') {
+      const pathname = path.join(APPLICATION_PATH, 'MindMap');
+      newMindMapFile(pathname, arg);
+      const list = readMindMapFileList(APPLICATION_PATH, 'MindMap');
+      event.reply('list-mind-map-file', list);
+    }
+    if (command === 'delete') {
+      const pathname = path.join(APPLICATION_PATH, 'MindMap');
+      removeFile(pathname, arg);
+      const list = readMindMapFileList(APPLICATION_PATH, 'MindMap');
+      event.reply('list-mind-map-file', list);
+    }
   });
 };
 

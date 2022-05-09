@@ -5,7 +5,7 @@ import {
   BrowserWindow,
   MenuItemConstructorOptions,
 } from 'electron';
-import { newDirectory, newFile, readFileTree } from './file';
+import { newDefaultFile, newDirectory, newFile, readFileTree } from './file';
 
 interface DarwinMenuItemConstructorOptions extends MenuItemConstructorOptions {
   selector?: string;
@@ -63,7 +63,7 @@ export default class MenuBuilder {
       {
         label: 'New Markdown',
         click: () => {
-          newFile(APPLICATION_PATH, 'md');
+          newDefaultFile(APPLICATION_PATH, 'md');
           this.reloadTreeData(APPLICATION_PATH);
         },
       },
@@ -78,7 +78,7 @@ export default class MenuBuilder {
       {
         label: 'New Mind Map',
         click: () => {
-          newFile(APPLICATION_PATH, 'mind');
+          newDefaultFile(APPLICATION_PATH, 'mindmap');
           this.reloadTreeData(APPLICATION_PATH);
         },
       },

@@ -162,6 +162,27 @@ const configuration: webpack.Configuration = {
     historyApiFallback: {
       verbose: true,
     },
+    setupMiddlewares(middlewares) {
+      console.log('Starting preload.js builder...');
+      const preloadProcess = spawn('npm', ['run', 'start:preload'], {
+        shell: true,
+        stdio: 'inherit',
+      })
+        .on('close', (code: number) => process.exit(code!))
+        .on('error', (spawnError) => console.error(spawnError));
+
+      console.log('Starting Main Process...');
+      spawn('npm', ['run', 'start:main'], {
+        shell: true,
+        stdio: 'inherit',
+      })
+        .on('close', (code: number) => {
+          preloadProcess.kill();
+          process.exit(code!);
+        })
+        .on('error', (spawnError) => console.error(spawnError));
+      return middlewares;
+    },
   },
 };
 

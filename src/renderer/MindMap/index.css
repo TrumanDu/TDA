@@ -3,13 +3,14 @@ li:hover {
 }
 
 li:hover button {
-  display: unset !important;
+  display: inline-flex !important;
 }
-
-li:focus {
+.mind-map-list .mind-map-list-focus-item {
   background-color: var(--semi-color-fill-0);
 }
-
-li:focus button {
-  display: unset !important;
+.mind-map-list .mind-map-list-focus-item button {
+  display: inline-flex !important;
+}
+.semi-list-item-extra {
+  margin-left: 2px;
 }

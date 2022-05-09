@@ -1,8 +1,10 @@
+/* eslint-disable promise/always-return */
+/* eslint-disable @typescript-eslint/no-shadow */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-param-reassign */
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useLayoutEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Button,
   Card,
@@ -15,9 +17,9 @@ import {
   Space,
   Tooltip,
   Notification,
-  Tree,
   List,
-  ButtonGroup,
+  Modal,
+  Form,
 } from '@douyinfe/semi-ui';
 import {
   IconCamera,
@@ -37,157 +39,6 @@ import Split from '@uiw/react-split';
 import './index.css';
 
 const { Menu } = ContextMenu;
-
-const rawData = {
-  label: '我来亲自测试一下文字，\n看看超出是什么样子的',
-  id: '0',
-  style: { fill: 'red' },
-  size: [
-    Util.getTextSize('我来亲自测试一下文字，看看超出是什么样子的', 14)[0] + 24,
-    40,
-  ],
-  children: [
-    {
-      label: 'Classification',
-      id: '0-1',
-      color: '#5AD8A6',
-      size: [Util.getTextSize('Classification', 14)[0] + 24, 1],
-      labelCfg: {
-        position: 'top',
-      },
-      children: [
-        {
-          label: 'Logistic regression',
-          id: '0-1-1',
-        },
-        {
-          label: 'Linear discriminant analysis',
-          id: '0-1-2',
-        },
-        {
-          label: 'Rules',
-          id: '0-1-3',
-        },
-        {
-          label: 'Decision trees',
-          id: '0-1-4',
-        },
-        {
-          label: 'Naive Bayes',
-          id: '0-1-5',
-        },
-        {
-          label: 'K nearest neighbor',
-          id: '0-1-6',
-        },
-        {
-          label: 'Probabilistic neural network',
-          id: '0-1-7',
-        },
-        {
-          label: 'Support vector machine',
-          id: '0-1-8',
-        },
-      ],
-    },
-    {
-      label: 'Consensus',
-      id: '0-2',
-      color: '#F6BD16',
-      children: [
-        {
-          label: 'Models diversity',
-          id: '0-2-1',
-          children: [
-            {
-              label: 'Different initializations',
-              id: '0-2-1-1',
-            },
-            {
-              label: 'Different parameter choices',
-              id: '0-2-1-2',
-            },
-            {
-              label: 'Different architectures',
-              id: '0-2-1-3',
-            },
-            {
-              label: 'Different modeling methods',
-              id: '0-2-1-4',
-            },
-            {
-              label: 'Different training sets',
-              id: '0-2-1-5',
-            },
-            {
-              label: 'Different feature sets',
-              id: '0-2-1-6',
-            },
-          ],
-        },
-        {
-          label: 'Methods',
-          id: '0-2-2',
-          children: [
-            {
-              label: 'Classifier selection',
-              id: '0-2-2-1',
-            },
-            {
-              label: 'Classifier fusion',
-              id: '0-2-2-2',
-            },
-          ],
-        },
-        {
-          label: 'Common',
-          id: '0-2-3',
-          children: [
-            {
-              label: 'Bagging',
-              id: '0-2-3-1',
-            },
-            {
-              label: 'Boosting',
-              id: '0-2-3-2',
-            },
-            {
-              label: 'AdaBoost',
-              id: '0-2-3-3',
-            },
-          ],
-        },
-      ],
-    },
-    {
-      label: 'Regression',
-      id: '0-3',
-      color: '#269A99',
-      children: [
-        {
-          label: 'Multiple linear regression',
-          id: '0-3-1',
-        },
-        {
-          label: 'Partial least squares',
-          id: '0-3-2',
-        },
-        {
-          label: 'Multi-layer feedforward neural network',
-          id: '0-3-3',
-        },
-        {
-          label: 'General regression neural network',
-          id: '0-3-4',
-        },
-        {
-          label: 'Support vector regression',
-          id: '0-3-5',
-        },
-      ],
-    },
-  ],
-};
 
 let colorFlag = 0;
 
@@ -219,15 +70,29 @@ const options = [
   },
 ];
 
-const mindList = [{ name: 'a' }, { name: 'a' }, { name: 'a' }];
-
 function MindMap() {
   const graphinRef = React.createRef();
 
   const [direction, setDirection] = useState<string>('LR');
+  const [focusIndex, setFocusIndex] = useState<number>();
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [formApi, setFormApi] = useState();
+  const [originMindList, setOriginMindList] = useState<[]>([]);
+  const [mindList, setMindList] = useState<[]>([]);
+  const [mindMapObj, setMindMapObj] = useState({
+    label: 'Topic',
+    id: '0',
+    style: { fill: 'blue' },
+    size: [100, 40],
+    children: [],
+  });
 
-  const reloadGraphin = () => {
-    window.location.reload();
+  const reloadGraphin = (graphinRef) => {
+    // window.location.reload();
+    graphinRef.current.graph.layout();
+    graphinRef.current.graph.changeData(mindMapObj);
+    graphinRef.current.graph.paint();
+    graphinRef.current.apis.handleAutoZoom();
   };
 
   const handleChange = (menuItem: any, menuData: any) => {
@@ -250,7 +115,7 @@ function MindMap() {
     if (menuItem.key === 'add') {
       const model = item.get('model');
       const newId = `${model.id}-${
-        ((model.children || []).reduce((a, b) => {
+        ((model.children || []).reduce((a: number, b: { id: string }) => {
           const num = Number(b.id.split('-').pop());
           return a < num ? num : a;
         }, 0) || 0) + 1
@@ -294,87 +159,118 @@ function MindMap() {
     graphinRef.current.graph.fitView(20);
   };
 
-  const addDblclickNodeListener = () => {
-    graphinRef.current.graph.on('node:dblclick', (evt) => {
-      const { item } = evt;
-      const model = item.get('model');
-      const { x, y } = item.calculateBBox();
-      const graph = evt.currentTarget;
-      const realPosition = evt.currentTarget.getClientByPoint(x, y);
-      const el = document.createElement('div');
-      el.style.fontSize = '20px';
-      el.style.position = 'fixed';
-      el.style.top = `${realPosition.y}px`;
-      el.style.left = `${realPosition.x}px`;
-      el.style.paddingLeft = '2px';
-      el.style.transformOrigin = 'top left';
-      el.style.transform = `scale(${evt.currentTarget.getZoom()})`;
-      const input = document.createElement('input');
-      input.style.border = 'none';
-      input.value = model.label;
-      input.style.width = `${Util.getTextSize(model.label, 14)[0] + 20}px`;
-      input.style.height = `25px`;
-      input.className = 'dice-input';
-      el.className = 'dice-input';
-      el.appendChild(input);
-      document.body.appendChild(el);
-      input.focus();
-      const destroyEl = () => {
-        document.body.removeChild(el);
-      };
-      const clickEvt = (event) => {
-        if (
-          !(
-            event.target &&
-            event.target.className &&
-            event.target.className.includes('dice-input')
-          )
-        ) {
-          window.removeEventListener('mousedown', clickEvt);
-          window.removeEventListener('scroll', clickEvt);
-          graph.updateItem(item, {
-            label: input.value,
-            size: [Util.getTextSize(input.value, 14)[0] + 24, 28],
-          });
-          graph.layout(false);
-          graph.off('wheelZoom', clickEvt);
-          destroyEl();
-        }
-      };
-      graph.on('wheelZoom', clickEvt);
-      window.addEventListener('mousedown', clickEvt);
-      window.addEventListener('scroll', clickEvt);
-      input.addEventListener('keyup', (event) => {
-        if (event.key === 'Enter') {
-          clickEvt({
-            target: {},
-          });
-        }
-      });
-    });
+  const addDblclickNodeListener = (graphinRef) => {
+    graphinRef.current.graph.on(
+      'node:dblclick',
+      (evt: { currentTarget?: any; item?: any }) => {
+        const { item } = evt;
+        const model = item.get('model');
+        const { x, y } = item.calculateBBox();
+        const graph = evt.currentTarget;
+        const realPosition = evt.currentTarget.getClientByPoint(x, y);
+        const el = document.createElement('div');
+        el.style.fontSize = '20px';
+        el.style.position = 'fixed';
+        el.style.top = `${realPosition.y}px`;
+        el.style.left = `${realPosition.x}px`;
+        el.style.paddingLeft = '2px';
+        el.style.transformOrigin = 'top left';
+        el.style.transform = `scale(${evt.currentTarget.getZoom()})`;
+        const input = document.createElement('input');
+        input.style.border = 'none';
+        input.value = model.label;
+        input.style.width = `${Util.getTextSize(model.label, 14)[0] + 20}px`;
+        input.style.height = `25px`;
+        input.className = 'dice-input';
+        el.className = 'dice-input';
+        el.appendChild(input);
+        document.body.appendChild(el);
+        input.focus();
+        const destroyEl = () => {
+          document.body.removeChild(el);
+        };
+        const clickEvt = (event: { target: any }) => {
+          if (
+            !(
+              event.target &&
+              event.target.className &&
+              event.target.className.includes('dice-input')
+            )
+          ) {
+            window.removeEventListener('mousedown', clickEvt);
+            window.removeEventListener('scroll', clickEvt);
+            graph.updateItem(item, {
+              label: input.value,
+              size: [Util.getTextSize(input.value, 14)[0] + 24, 28],
+            });
+            graph.layout(false);
+            graph.off('wheelZoom', clickEvt);
+            destroyEl();
+          }
+        };
+        graph.on('wheelZoom', clickEvt);
+        window.addEventListener('mousedown', clickEvt);
+        window.addEventListener('scroll', clickEvt);
+        input.addEventListener('keyup', (event) => {
+          if (event.key === 'Enter') {
+            clickEvt({
+              target: {},
+            });
+          }
+        });
+      }
+    );
   };
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     // 监听
-    window.addEventListener('resize', reloadGraphin);
+    window.addEventListener('resize', reloadGraphin(graphinRef));
     fitView();
-    addDblclickNodeListener();
+    addDblclickNodeListener(graphinRef);
+    window.electron.ipcRenderer.send('mind-map', 'list');
+    window.electron.ipcRenderer.on('list-mind-map-file', (data) => {
+      setOriginMindList(data);
+      setMindList(data);
+    });
 
     // 销毁
     return () => window.removeEventListener('resize', () => {});
   }, []);
 
-  const [mindMapList, setMindMapList] = useState(mindList);
-
-  const onSearch = (search) => {
-    console.log(search);
+  const onSearch = (
+    search: string | React.CompositionEvent<HTMLInputElement> | null
+  ) => {
     let newList;
     if (search) {
-      newList = mindList.filter((item) => item.name.includes(search));
+      newList = originMindList.filter((item) => item.name.includes(search));
     } else {
-      newList = mindList;
+      newList = originMindList;
     }
-    setMindMapList(newList);
+    setMindList(newList);
+  };
+  const handleCancel = () => {
+    setModalVisible(false);
+  };
+
+  const handleOk = () => {
+    formApi
+      .validate()
+      .then((values: any) => {
+        window.electron.ipcRenderer.send('mind-map', 'new', values.name);
+        setModalVisible(false);
+      })
+      .catch((errors: any) => {
+        console.log(errors);
+      });
+  };
+
+  const handleDelete = (name: string) => {
+    Modal.warning({
+      title: 'Are you sure delete?',
+      onOk: () => {
+        window.electron.ipcRenderer.send('mind-map', 'delete', name);
+      },
+    });
   };
 
   return (
@@ -386,7 +282,42 @@ function MindMap() {
         borderRadius: 3,
       }}
     >
-      <div id="fileTree" style={{ minWidth: '10%', maxWidth: '40%' }}>
+      <Modal
+        title="New Mind Map"
+        visible={modalVisible}
+        onCancel={handleCancel}
+        onOk={handleOk}
+        okText="Save"
+        cancelText="Cancel"
+      >
+        <Form
+          layout="horizontal"
+          getFormApi={(formApi) => {
+            setFormApi(formApi);
+          }}
+        >
+          <Row>
+            <Col span={2} />
+            <Col span={20}>
+              <Form.Input
+                style={{ width: '300px' }}
+                field="name"
+                noLabel
+                trigger="blur"
+                addonAfter=".mindmap"
+                size="large"
+                placeholder="Enter mind map name"
+                rules={[{ required: true, message: 'Name is required.' }]}
+              />
+            </Col>
+            <Col span={2} />
+          </Row>
+        </Form>
+      </Modal>
+      <div
+        id="fileTree"
+        style={{ minWidth: '15%', maxWidth: '40%', width: '350px' }}
+      >
         <Row
           style={{
             marginTop: '5px',
@@ -398,6 +329,9 @@ function MindMap() {
               icon={<IconPlusStroked />}
               theme="solid"
               style={{ marginRight: 10 }}
+              onClick={() => {
+                setModalVisible(true);
+              }}
             >
               New
             </Button>
@@ -418,6 +352,7 @@ function MindMap() {
           }}
         />
         <List
+          className="mind-map-list"
           header={
             <Input
               onCompositionEnd={(v) => onSearch(v)}
@@ -426,9 +361,28 @@ function MindMap() {
               prefix={<IconSearch />}
             />
           }
-          dataSource={mindMapList}
-          renderItem={(item) => (
+          dataSource={mindList}
+          renderItem={(item: MindMapItem, index) => (
             <List.Item
+              className={index === focusIndex ? 'mind-map-list-focus-item' : ''}
+              onClick={() => {
+                setFocusIndex(index);
+                try {
+                  setMindMapObj(JSON.parse(item.data));
+                  const { graph } = graphinRef.current;
+                  graph.changeData(JSON.parse(item.data));
+                  graph.paint();
+                  graph.fitView(20);
+                } catch (error) {
+                  console.error(error, item);
+                }
+              }}
+              header={
+                <IconFlowChartStroked
+                  style={{ color: '#9C27B0' }}
+                  size="large"
+                />
+              }
               main={
                 <div>
                   <span
@@ -437,7 +391,7 @@ function MindMap() {
                       fontWeight: 500,
                     }}
                   >
-                    示例标题
+                    {item.name.substring(0, item.name.indexOf('.'))}
                   </span>
                 </div>
               }
@@ -446,6 +400,7 @@ function MindMap() {
                   style={{ display: 'none' }}
                   theme="borderless"
                   type="danger"
+                  onClick={() => handleDelete(item.name)}
                   icon={<IconDeleteStroked />}
                 />
               }
@@ -564,11 +519,11 @@ function MindMap() {
         </Row>
         <Divider margin="12px" />
         <Graphin
-          data={rawData}
+          data={mindMapObj}
           ref={graphinRef}
           style={{ marginBottom: 20 }}
-          /*  fitView
-        fitViewPadding={20} */
+          /*   fitView
+          fitViewPadding={20} */
           layout={{
             type: 'compactBox',
             direction,

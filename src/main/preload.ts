@@ -11,8 +11,16 @@ contextBridge.exposeInMainWorld('electron', {
     loadTreeData() {
       ipcRenderer.send('list-tree-file');
     },
+    send(channel: string, ...args: unknown[]) {
+      ipcRenderer.send(channel, ...args);
+    },
     on(channel: string, func: (...args: unknown[]) => void) {
-      const validChannels = ['ipc-example', 'list-tree-file'];
+      const validChannels = [
+        'ipc-example',
+        'list-tree-file',
+        'list-mind-map-file',
+        'mind-map',
+      ];
       if (validChannels.includes(channel)) {
         const subscription = (_event: IpcRendererEvent, ...args: unknown[]) =>
           func(...args);
@@ -25,7 +33,7 @@ contextBridge.exposeInMainWorld('electron', {
       return undefined;
     },
     once(channel: string, func: (...args: unknown[]) => void) {
-      const validChannels = ['ipc-example'];
+      const validChannels = ['ipc-example', 'mind-map'];
       if (validChannels.includes(channel)) {
         // Deliberately strip event as it includes `sender`
         ipcRenderer.once(channel, (_event, ...args) => func(...args));

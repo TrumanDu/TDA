@@ -16,10 +16,8 @@
         },
         "background": {
           "activeOnStart": true,
-          "beginsPattern": ".",
-          "endsPattern": "Project is running at:$"
-          /*  "beginsPattern": "Compiling\\.\\.\\.$",
-          "endsPattern": "(Compiled successfully|Failed to compile)\\.$" */
+          "beginsPattern": "Compiling\\.\\.\\.$",
+          "endsPattern": "(Compiled successfully|Failed to compile)\\.$"
         }
       }
     }
