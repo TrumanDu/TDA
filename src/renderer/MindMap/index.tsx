@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable promise/always-return */
 /* eslint-disable @typescript-eslint/no-shadow */
 /* eslint-disable no-underscore-dangle */
@@ -30,6 +31,7 @@ import {
   IconWindowAdaptionStroked,
   IconListView,
   IconSearch,
+  IconSave,
 } from '@douyinfe/semi-icons';
 import { ContextMenu, MiniMap } from '@antv/graphin-components';
 import { Util } from '@antv/g6-core';
@@ -70,6 +72,18 @@ const options = [
   },
 ];
 
+const newMindObj = {
+  name: 'New.mindmap',
+  changeMs: new Date().getTime(),
+  data: JSON.stringify({
+    label: 'Topic',
+    id: '0',
+    style: { fill: 'blue' },
+    size: [100, 40],
+    children: [],
+  }),
+};
+
 function MindMap() {
   const graphinRef = React.createRef();
 
@@ -79,20 +93,12 @@ function MindMap() {
   const [formApi, setFormApi] = useState();
   const [originMindList, setOriginMindList] = useState<[]>([]);
   const [mindList, setMindList] = useState<[]>([]);
-  const [mindMapObj, setMindMapObj] = useState({
-    label: 'Topic',
-    id: '0',
-    style: { fill: 'blue' },
-    size: [100, 40],
-    children: [],
-  });
 
-  const reloadGraphin = (graphinRef) => {
-    // window.location.reload();
-    graphinRef.current.graph.layout();
-    graphinRef.current.graph.changeData(mindMapObj);
-    graphinRef.current.graph.paint();
-    graphinRef.current.apis.handleAutoZoom();
+  const [mindMapObj, setMindMapObj] = useState<MindMapItem>(newMindObj);
+  const [mindMapName, setMindMapName] = useState<string>('New');
+
+  const reloadGraphin = () => {
+    window.location.reload();
   };
 
   const handleChange = (menuItem: any, menuData: any) => {
@@ -224,18 +230,35 @@ function MindMap() {
 
   useEffect(() => {
     // 监听
-    window.addEventListener('resize', reloadGraphin(graphinRef));
+    window.addEventListener('resize', reloadGraphin);
     fitView();
+
     addDblclickNodeListener(graphinRef);
     window.electron.ipcRenderer.send('mind-map', 'list');
     window.electron.ipcRenderer.on('list-mind-map-file', (data) => {
       setOriginMindList(data);
       setMindList(data);
+      setFocusIndex(0);
+      if (data.length > 0) {
+        try {
+          const item = data[0];
+          const { graph } = graphinRef.current;
+          graph.changeData(JSON.parse(item.data));
+          setMindMapObj({ ...item });
+          setMindMapName(item.name.substring(0, item.name.indexOf('.')));
+        } catch (error) {
+          console.error(error, item);
+        }
+      }
     });
 
     // 销毁
     return () => window.removeEventListener('resize', () => {});
   }, []);
+
+  useEffect(() => {
+    fitView();
+  }, [mindMapObj, focusIndex]);
 
   const onSearch = (
     search: string | React.CompositionEvent<HTMLInputElement> | null
@@ -256,7 +279,9 @@ function MindMap() {
     formApi
       .validate()
       .then((values: any) => {
-        window.electron.ipcRenderer.send('mind-map', 'new', values.name);
+        window.electron.ipcRenderer.send('mind-map', 'new', {
+          name: values.name,
+        });
         setModalVisible(false);
       })
       .catch((errors: any) => {
@@ -268,8 +293,16 @@ function MindMap() {
     Modal.warning({
       title: 'Are you sure delete?',
       onOk: () => {
-        window.electron.ipcRenderer.send('mind-map', 'delete', name);
+        window.electron.ipcRenderer.send('mind-map', 'delete', { name });
       },
+    });
+  };
+
+  const saveData = () => {
+    const { graph } = graphinRef.current;
+    window.electron.ipcRenderer.send('mind-map', 'edit', {
+      name: mindMapName,
+      data: graph.save(),
     });
   };
 
@@ -368,11 +401,12 @@ function MindMap() {
               onClick={() => {
                 setFocusIndex(index);
                 try {
-                  setMindMapObj(JSON.parse(item.data));
                   const { graph } = graphinRef.current;
                   graph.changeData(JSON.parse(item.data));
-                  graph.paint();
-                  graph.fitView(20);
+                  setMindMapObj({ ...item });
+                  setMindMapName(
+                    item.name.substring(0, item.name.indexOf('.'))
+                  );
                 } catch (error) {
                   console.error(error, item);
                 }
@@ -413,7 +447,19 @@ function MindMap() {
           <Col>
             <Input
               size="large"
-              value="Untitled.mind"
+              onChange={(value) => {
+                setMindMapName(value);
+              }}
+              onBlur={(e) => {
+                window.electron.ipcRenderer.send('mind-map', 'rename', {
+                  name: e.target.value,
+                  oldname: mindMapObj.name.substring(
+                    0,
+                    mindMapObj.name.indexOf('.')
+                  ),
+                });
+              }}
+              value={mindMapName}
               style={{ backgroundColor: 'white' }}
             />
           </Col>
@@ -513,13 +559,28 @@ function MindMap() {
                     />
                   </Dropdown>
                 </Tooltip>
+
+                <Tooltip
+                  content="Save"
+                  clickToHide
+                  motion={false}
+                  position="bottom"
+                >
+                  <Button
+                    onClick={saveData}
+                    size="large"
+                    theme="borderless"
+                    type="tertiary"
+                    icon={<IconSave />}
+                  />
+                </Tooltip>
               </Space>
             </div>
           </Col>
         </Row>
         <Divider margin="12px" />
         <Graphin
-          data={mindMapObj}
+          data={JSON.parse(mindMapObj.data)}
           ref={graphinRef}
           style={{ marginBottom: 20 }}
           /*   fitView

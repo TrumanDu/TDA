@@ -21,6 +21,8 @@ import {
   readFileTree,
   readMindMapFileList,
   removeFile,
+  renameFile,
+  saveFile,
 } from './file';
 
 const APPLICATION_PATH = path.join(os.homedir(), 'tda');
@@ -138,22 +140,28 @@ const createWindow = async () => {
   });
 
   ipcMain.on('mind-map', (event, command, arg) => {
-    if (command === 'list') {
-      const list = readMindMapFileList(APPLICATION_PATH, 'MindMap');
-      event.reply('list-mind-map-file', list);
-    }
+    /* if (command === 'list') {
+    } */
     if (command === 'new') {
       const pathname = path.join(APPLICATION_PATH, 'MindMap');
-      newMindMapFile(pathname, arg);
-      const list = readMindMapFileList(APPLICATION_PATH, 'MindMap');
-      event.reply('list-mind-map-file', list);
+      newMindMapFile(pathname, arg.name);
     }
     if (command === 'delete') {
       const pathname = path.join(APPLICATION_PATH, 'MindMap');
-      removeFile(pathname, arg);
-      const list = readMindMapFileList(APPLICATION_PATH, 'MindMap');
-      event.reply('list-mind-map-file', list);
+      removeFile(pathname, arg.name);
     }
+    if (command === 'rename') {
+      const pathname = path.join(APPLICATION_PATH, 'MindMap');
+      // 文件重命名
+      renameFile(pathname, arg.oldname, arg.name, '.mindmap');
+    }
+    if (command === 'edit') {
+      const pathname = path.join(APPLICATION_PATH, 'MindMap');
+      // 保存数据
+      saveFile(pathname, `${arg.name}.mindmap`, arg.data);
+    }
+    const list = readMindMapFileList(APPLICATION_PATH, 'MindMap');
+    event.reply('list-mind-map-file', list);
   });
 };
 

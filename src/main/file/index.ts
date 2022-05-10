@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import fs from 'fs-extra';
 import path from 'path';
@@ -172,6 +173,35 @@ export const removeFile = (pathname: string, filename: string): boolean => {
   fs.removeSync(name);
   return true;
 };
+
+export const renameFile = (
+  pathname: string,
+  oldname: string,
+  newName: string,
+  fileType: string
+): boolean => {
+  const name = path.join(pathname, oldname) + fileType;
+  if (!fs.existsSync(name)) {
+    return false;
+  }
+  const newname = path.join(pathname, newName) + fileType;
+  fs.renameSync(name, newname);
+  return true;
+};
+
+export const saveFile = (
+  pathname: string,
+  name: string,
+  data: any
+): boolean => {
+  const file = path.join(pathname, name);
+  if (!fs.existsSync(file)) {
+    return false;
+  }
+  fs.writeJSONSync(file, data);
+  return true;
+};
+
 export const newDirectory = (pathname: string): boolean => {
   const templateName = 'Untitled Folder';
   let name = path.join(pathname, templateName);
