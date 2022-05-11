@@ -19,7 +19,7 @@ contextBridge.exposeInMainWorld('electron', {
         'ipc-example',
         'list-tree-file',
         'list-mind-map-file',
-        'mind-map',
+        'app-notification',
       ];
       if (validChannels.includes(channel)) {
         const subscription = (_event: IpcRendererEvent, ...args: unknown[]) =>

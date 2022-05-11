@@ -137,14 +137,14 @@ function MindMap() {
       ]);
 
       model.children = children;
-      graph.set('defaultEdge', {
+      /*  graph.set('defaultEdge', {
         type: 'cubic-horizontal',
         style: {
           stroke: color,
           cursor: 'default',
           lineWidth: 1.5,
         },
-      });
+      }); */
       graph.updateChild(model, menuData.id);
       graph.get('canvas').set('localRefresh', false);
     }
@@ -234,7 +234,7 @@ function MindMap() {
     fitView();
 
     addDblclickNodeListener(graphinRef);
-    window.electron.ipcRenderer.send('mind-map', 'list');
+    window.electron.ipcRenderer.send('list-mind-map-file');
     window.electron.ipcRenderer.on('list-mind-map-file', (data) => {
       setOriginMindList(data);
       setMindList(data);
@@ -242,8 +242,6 @@ function MindMap() {
       if (data.length > 0) {
         try {
           const item = data[0];
-          const { graph } = graphinRef.current;
-          graph.changeData(JSON.parse(item.data));
           setMindMapObj({ ...item });
           setMindMapName(item.name.substring(0, item.name.indexOf('.')));
         } catch (error) {
@@ -251,7 +249,6 @@ function MindMap() {
         }
       }
     });
-
     // 销毁
     return () => window.removeEventListener('resize', () => {});
   }, []);

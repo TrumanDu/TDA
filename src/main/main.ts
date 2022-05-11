@@ -139,7 +139,14 @@ const createWindow = async () => {
     menuBuilder.buildDefaultContextMenu(event, APPLICATION_PATH);
   });
 
-  ipcMain.on('mind-map', (event, command, arg) => {
+  ipcMain.on('list-mind-map-file', (event) => {
+    const list = readMindMapFileList(APPLICATION_PATH, 'MindMap');
+    if (list) {
+      event.reply('list-mind-map-file', list);
+    }
+  });
+
+  ipcMain.on('mind-map', async (event, command, arg) => {
     /* if (command === 'list') {
     } */
     if (command === 'new') {
@@ -149,19 +156,24 @@ const createWindow = async () => {
     if (command === 'delete') {
       const pathname = path.join(APPLICATION_PATH, 'MindMap');
       removeFile(pathname, arg.name);
+      event.reply('app-notification', 'Delete success!');
     }
     if (command === 'rename') {
       const pathname = path.join(APPLICATION_PATH, 'MindMap');
       // 文件重命名
       renameFile(pathname, arg.oldname, arg.name, '.mindmap');
+      event.reply('app-notification', 'Rename success!');
     }
     if (command === 'edit') {
       const pathname = path.join(APPLICATION_PATH, 'MindMap');
       // 保存数据
       saveFile(pathname, `${arg.name}.mindmap`, arg.data);
+      event.reply('app-notification', 'Save success!');
     }
     const list = readMindMapFileList(APPLICATION_PATH, 'MindMap');
-    event.reply('list-mind-map-file', list);
+    if (list) {
+      event.reply('list-mind-map-file', list);
+    }
   });
 };
 

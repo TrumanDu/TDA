@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Button, Layout, Nav, Tooltip } from '@douyinfe/semi-ui';
+import { Notification, Button, Layout, Nav, Tooltip } from '@douyinfe/semi-ui';
 import {
   BrowserRouter as Router,
   Routes,
@@ -16,7 +16,7 @@ import {
   IconSetting,
   IconKanban,
 } from '@douyinfe/semi-icons';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import MindMap from './MindMap';
 import Kanban from './Kanban';
 import Home from './Home';
@@ -37,6 +37,16 @@ const AppLayout = () => {
   const { Sider } = Layout;
 
   const [selectKey, setSelectKey] = useState([location.pathname]);
+
+  useEffect(() => {
+    window.electron.ipcRenderer.on('app-notification', (message) => {
+      Notification.info({
+        title: message,
+        duration: 3,
+        theme: 'light',
+      });
+    });
+  }, []);
 
   const navigate = useNavigate();
   return (
