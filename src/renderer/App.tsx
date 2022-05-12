@@ -11,7 +11,7 @@ import {
 
 import './App.css';
 import {
-  IconHome,
+  /*  IconHome, */
   IconFlowChartStroked,
   IconSetting,
   IconKanban,
@@ -19,7 +19,7 @@ import {
 import { useEffect, useState } from 'react';
 import MindMap from './MindMap';
 import Kanban from './Kanban';
-import Home from './Home';
+/* import Home from './Home'; */
 
 const setting = (
   <Tooltip content="系统设置" position="right" key="setting">
@@ -66,7 +66,7 @@ const AppLayout = () => {
           isCollapsed
           style={{ maxWidth: 220, height: '100%' }}
           items={[
-            {
+            /*             {
               itemKey: '/',
               text: '首页',
               icon: <IconHome size="large" />,
@@ -74,14 +74,14 @@ const AppLayout = () => {
                 navigate('/');
                 setSelectKey(['/']);
               },
-            },
+            }, */
             {
-              itemKey: '/mindMap',
+              itemKey: '/',
               text: 'MindMap',
               icon: <IconFlowChartStroked size="large" />,
               onClick: () => {
-                navigate('/mindMap');
-                setSelectKey(['/mindMap']);
+                navigate('/');
+                setSelectKey(['/']);
               },
             },
             {
@@ -119,8 +119,8 @@ export default function App() {
     <Router>
       <Routes>
         <Route path="/" element={<AppLayout />}>
-          <Route index element={<Home />} />
-          <Route path="mindMap" element={<MindMap />} />
+          {/*   <Route index element={<Home />} /> */}
+          <Route index element={<MindMap />} />
           <Route path="kanban" element={<Kanban />} />
         </Route>
       </Routes>

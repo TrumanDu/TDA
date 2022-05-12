@@ -93,6 +93,7 @@ function MindMap() {
   const [formApi, setFormApi] = useState();
   const [originMindList, setOriginMindList] = useState<[]>([]);
   const [mindList, setMindList] = useState<[]>([]);
+  const [searchKey, setSearchKey] = useState<string>();
 
   const [mindMapObj, setMindMapObj] = useState<MindMapItem>(newMindObj);
   const [mindMapName, setMindMapName] = useState<string>('New');
@@ -127,7 +128,8 @@ function MindMap() {
         }, 0) || 0) + 1
       }`;
 
-      const color = model.color || colorArr[colorFlag++ % colorArr.length];
+      const color = model.color || colorArr[colorFlag % colorArr.length];
+      colorFlag += 1;
       const children = (model.children || []).concat([
         {
           id: newId,
@@ -266,6 +268,7 @@ function MindMap() {
     } else {
       newList = originMindList;
     }
+    setSearchKey(search);
     setMindList(newList);
   };
   const handleCancel = () => {
@@ -360,6 +363,7 @@ function MindMap() {
               theme="solid"
               style={{ marginRight: 10 }}
               onClick={() => {
+                setSearchKey('');
                 setModalVisible(true);
               }}
             >
@@ -388,6 +392,7 @@ function MindMap() {
               onCompositionEnd={(v) => onSearch(v)}
               onChange={(v) => (!v ? onSearch(null) : onSearch(v))}
               placeholder="Search"
+              value={searchKey}
               prefix={<IconSearch />}
             />
           }
