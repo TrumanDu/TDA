@@ -85,7 +85,7 @@ export const readMindMapFileList = (
       list.push({
         name: filename,
         changeMs: stat.ctimeMs,
-        data: data.toString(),
+        data: JSON.parse(data.toString()),
       });
     }
   });
@@ -143,13 +143,22 @@ export const newMindMapFile = (pathname: string, filename: string): boolean => {
   const defaultData = {
     label: 'Topic',
     id: '0',
-    style: { fill: 'blue' },
-    size: [100, 40],
+    style: {
+      fill: '#4c94ff',
+    },
+    labelCfg: {
+      style: {
+        fontWeight: 700,
+        fontSize: 20,
+        fill: '#ffffff',
+      },
+    },
+    size: [200, 50],
     children: [],
   };
   if (!fs.existsSync(name)) {
     fs.createFileSync(name);
-    fs.writeJSONSync(name, defaultData, 'utf-8');
+    fs.writeJSONSync(name, { data: defaultData }, 'utf-8');
     return true;
   }
 
@@ -157,7 +166,7 @@ export const newMindMapFile = (pathname: string, filename: string): boolean => {
     name = path.join(pathname, `${filename}(${index}).mindmap`);
     if (!fs.existsSync(name)) {
       fs.createFileSync(name);
-      fs.writeJSONSync(name, defaultData, 'utf-8');
+      fs.writeJSONSync(name, { data: defaultData }, 'utf-8');
       return true;
     }
   }

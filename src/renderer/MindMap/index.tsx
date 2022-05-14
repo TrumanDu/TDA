@@ -34,7 +34,6 @@ import {
   IconSave,
 } from '@douyinfe/semi-icons';
 import { ContextMenu, MiniMap } from '@antv/graphin-components';
-import { Util } from '@antv/g6-core';
 import Graphin from '@antv/graphin';
 import Split from '@uiw/react-split';
 
@@ -75,13 +74,13 @@ const options = [
 const newMindObj = {
   name: 'New.mindmap',
   changeMs: new Date().getTime(),
-  data: JSON.stringify({
+  data: {
     label: 'Topic',
     id: '0',
-    style: { fill: 'blue' },
+    style: { fill: '#4c94ff' },
     size: [100, 40],
     children: [],
-  }),
+  },
 };
 
 function MindMap() {
@@ -97,6 +96,7 @@ function MindMap() {
 
   const [mindMapObj, setMindMapObj] = useState<MindMapItem>(newMindObj);
   const [mindMapName, setMindMapName] = useState<string>('New');
+  const [mindMapData, setMindMapData] = useState(newMindObj.data);
 
   const reloadGraphin = () => {
     window.location.reload();
@@ -130,13 +130,54 @@ function MindMap() {
 
       const color = model.color || colorArr[colorFlag % colorArr.length];
       colorFlag += 1;
-      const children = (model.children || []).concat([
-        {
+
+      const level = newId.split('-').length;
+      let node = {
+        id: newId,
+        label: 'New',
+        color,
+        labelCfg: {
+          style: {
+            fontSize: 14,
+            fontWeight: 700,
+          },
+        },
+        size: [200, 50],
+      };
+      if (level === 3) {
+        node = {
           id: newId,
           label: 'New',
           color,
-        },
-      ]);
+          style: {
+            lineDash: [1, 4, 7],
+          },
+          labelCfg: {
+            style: {
+              fontSize: 14,
+            },
+          },
+          size: [200, 50],
+        };
+      }
+      if (level === 4) {
+        node = {
+          id: newId,
+          label: 'New',
+          color,
+          style: {
+            lineDash: [1, 1, 1],
+          },
+          labelCfg: {
+            style: {
+              fontSize: 14,
+            },
+          },
+          size: [200, 50],
+        };
+      }
+
+      const children = (model.children || []).concat([node]);
 
       model.children = children;
       /*  graph.set('defaultEdge', {
@@ -153,7 +194,7 @@ function MindMap() {
   };
 
   const exportImage = () => {
-    graphinRef.current.graph.downloadFullImage();
+    graphinRef.current.graph.downloadFullImage(mindMapName);
   };
 
   const actualSize = () => {
@@ -177,7 +218,7 @@ function MindMap() {
         const graph = evt.currentTarget;
         const realPosition = evt.currentTarget.getClientByPoint(x, y);
         const el = document.createElement('div');
-        el.style.fontSize = '20px';
+        el.style.fontSize = '14px';
         el.style.position = 'fixed';
         el.style.top = `${realPosition.y}px`;
         el.style.left = `${realPosition.x}px`;
@@ -187,8 +228,10 @@ function MindMap() {
         const input = document.createElement('input');
         input.style.border = 'none';
         input.value = model.label;
-        input.style.width = `${Util.getTextSize(model.label, 14)[0] + 20}px`;
-        input.style.height = `25px`;
+
+        input.style.width = `${model.size[0]}px`;
+        input.style.height = `${model.size[1]}px`;
+
         input.className = 'dice-input';
         el.className = 'dice-input';
         el.appendChild(input);
@@ -207,9 +250,24 @@ function MindMap() {
           ) {
             window.removeEventListener('mousedown', clickEvt);
             window.removeEventListener('scroll', clickEvt);
+            const text = input.value;
+            let newText = input.value;
+            let row = 50;
+            if (input.value.length > 14) {
+              newText = '';
+              for (let index = 0; index < text.length; index += 1) {
+                const element = text.substring(index, index + 1);
+                if (index % 14 === 0) {
+                  newText += '\n';
+                  row += 14;
+                }
+                newText += element;
+              }
+            }
+
             graph.updateItem(item, {
-              label: input.value,
-              size: [Util.getTextSize(input.value, 14)[0] + 24, 28],
+              label: newText,
+              size: [200, row],
             });
             graph.layout(false);
             graph.off('wheelZoom', clickEvt);
@@ -230,24 +288,39 @@ function MindMap() {
     );
   };
 
+  const autoMindMapLayout = () => {
+    if (mindMapData) {
+      if (mindMapData.children && mindMapData.children.length > 0) {
+        fitView();
+        return;
+      }
+    }
+    actualSize();
+  };
+
   useEffect(() => {
     // 监听
     window.addEventListener('resize', reloadGraphin);
-    fitView();
+    autoMindMapLayout();
 
     addDblclickNodeListener(graphinRef);
     window.electron.ipcRenderer.send('list-mind-map-file');
     window.electron.ipcRenderer.on('list-mind-map-file', (data) => {
-      setOriginMindList(data);
-      setMindList(data);
-      setFocusIndex(0);
-      if (data.length > 0) {
-        try {
-          const item = data[0];
-          setMindMapObj({ ...item });
-          setMindMapName(item.name.substring(0, item.name.indexOf('.')));
-        } catch (error) {
-          console.error(error, item);
+      if (data) {
+        setOriginMindList(data);
+        setMindList(data);
+        setFocusIndex(0);
+        if (data.length > 0) {
+          try {
+            const item = data[0];
+            setMindMapData(item.data.data);
+            setMindMapObj({ ...item });
+
+            setMindMapName(item.name.substring(0, item.name.indexOf('.')));
+          } catch (error) {
+            console.logo(item);
+            console.error(error);
+          }
         }
       }
     });
@@ -256,7 +329,7 @@ function MindMap() {
   }, []);
 
   useEffect(() => {
-    fitView();
+    autoMindMapLayout();
   }, [mindMapObj, focusIndex]);
 
   const onSearch = (
@@ -300,9 +373,10 @@ function MindMap() {
 
   const saveData = () => {
     const { graph } = graphinRef.current;
+    const zoom = graph.getZoom();
     window.electron.ipcRenderer.send('mind-map', 'edit', {
       name: mindMapName,
-      data: graph.save(),
+      data: { data: graph.save(), zoom },
     });
   };
 
@@ -404,7 +478,8 @@ function MindMap() {
                 setFocusIndex(index);
                 try {
                   const { graph } = graphinRef.current;
-                  graph.changeData(JSON.parse(item.data));
+                  graph.changeData(item.data.data);
+                  setMindMapData(item.data.data);
                   setMindMapObj({ ...item });
                   setMindMapName(
                     item.name.substring(0, item.name.indexOf('.'))
@@ -582,7 +657,7 @@ function MindMap() {
         </Row>
         <Divider margin="12px" />
         <Graphin
-          data={JSON.parse(mindMapObj.data)}
+          data={mindMapData}
           ref={graphinRef}
           style={{ marginBottom: 20 }}
           /*   fitView
@@ -591,13 +666,13 @@ function MindMap() {
             type: 'compactBox',
             direction,
             getVGap: () => {
-              return 14;
+              return 20;
             },
             getHGap: () => {
               return 50;
             },
             getHeight: () => {
-              return 20;
+              return 30;
             },
             getWidth: () => {
               return 200;
@@ -605,7 +680,7 @@ function MindMap() {
           }}
           defaultNode={{
             type: 'rect',
-            size: 20,
+            size: [150, 50],
             style: {
               fill: '#fff',
               lineWidth: 2.5,
