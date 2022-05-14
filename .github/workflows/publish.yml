@@ -2,13 +2,14 @@ name: Publish
 
 on:
   pull_request:
-    types: [closed]
+    types:
+      - closed
 
 jobs:
   publish:
     # To enable auto publishing to github, update your electron publisher
     # config in package.json > "build" and remove the conditional below
-    if: ${{ github.repository_owner == 'TDA' }}
+    if: github.event.pull_request.merged == true
 
     runs-on: ${{ matrix.os }}
 
