@@ -17,6 +17,7 @@ import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 import {
   createDir,
+  newKanbanFile,
   newMindMapFile,
   readFileTree,
   readMindMapFileList,
@@ -176,6 +177,36 @@ const createWindow = async () => {
     }
   });
 };
+
+ipcMain.on('kanban', async (event, command, arg) => {
+  /* if (command === 'list') {
+  } */
+  if (command === 'new') {
+    const pathname = path.join(APPLICATION_PATH, 'Kanban');
+    newKanbanFile(pathname, arg.name);
+  }
+  if (command === 'delete') {
+    const pathname = path.join(APPLICATION_PATH, 'Kanban');
+    removeFile(pathname, arg.name);
+    event.reply('app-notification', 'Delete success!');
+  }
+  if (command === 'rename') {
+    const pathname = path.join(APPLICATION_PATH, 'Kanban');
+    // 文件重命名
+    renameFile(pathname, arg.oldname, arg.name, '.mindmap');
+    event.reply('app-notification', 'Rename success!');
+  }
+  if (command === 'edit') {
+    const pathname = path.join(APPLICATION_PATH, 'Kanban');
+    // 保存数据
+    saveFile(pathname, `${arg.name}.kanban`, arg.data);
+    event.reply('app-notification', 'Save success!');
+  }
+  const list = readMindMapFileList(APPLICATION_PATH, 'Kanban');
+  if (list) {
+    event.reply('list-kanban', list);
+  }
+});
 
 /**
  * Add event listeners...

@@ -174,6 +174,27 @@ export const newMindMapFile = (pathname: string, filename: string): boolean => {
   return false;
 };
 
+export const newKanbanFile = (pathname: string, filename: string): boolean => {
+  let name = path.join(pathname, `${filename}.kanban`);
+
+  if (!fs.existsSync(name)) {
+    fs.createFileSync(name);
+    fs.writeJSONSync(name, { data: {} }, 'utf-8');
+    return true;
+  }
+
+  for (let index = 1; index < 65535; index += 1) {
+    name = path.join(pathname, `${filename}(${index}).kanban`);
+    if (!fs.existsSync(name)) {
+      fs.createFileSync(name);
+      fs.writeJSONSync(name, { data: {} }, 'utf-8');
+      return true;
+    }
+  }
+
+  return false;
+};
+
 export const removeFile = (pathname: string, filename: string): boolean => {
   const name = path.join(pathname, filename);
   if (!fs.existsSync(name)) {
