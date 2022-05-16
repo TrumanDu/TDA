@@ -31,8 +31,8 @@
     ]
   },
   "build": {
-    "productName": "ElectronReact",
-    "appId": "org.erb.ElectronReact",
+    "productName": "TDA",
+    "appId": "top.trumandu.tda",
     "asar": true,
     "asarUnpack": "**\\*.{node,dll}",
     "files": [

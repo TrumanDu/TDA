@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Notification, Button, Layout, Nav, Tooltip } from '@douyinfe/semi-ui';
 import {
-  BrowserRouter as Router,
+  MemoryRouter as Router,
   Routes,
   Route,
   Outlet,
@@ -119,7 +119,7 @@ export default function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<AppLayout />}>
+        <Route path="/*" element={<AppLayout />}>
           {/*   <Route index element={<Home />} /> */}
           <Route index element={<MindMap />} />
           <Route path="kanban" element={<Kanban />} />
