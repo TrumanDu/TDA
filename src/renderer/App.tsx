@@ -17,6 +17,7 @@ import {
   IconKanban,
 } from '@douyinfe/semi-icons';
 import { useEffect, useState } from 'react';
+
 import MindMap from './MindMap';
 import Kanban from './Kanban';
 /* import Home from './Home'; */
@@ -94,13 +95,13 @@ const AppLayout = () => {
               },
             },
           ]}
-          header={{
+          /* header={{
             logo: (
               // eslint-disable-next-line jsx-a11y/alt-text
-              <img src="//lf1-cdn-tos.bytescm.com/obj/ttfe/ies/semi/webcast_logo.svg" />
+              <img src={logo} />
             ),
             text: 'TrumanDu Assistant',
-          }}
+          }} */
           footer={{
             children: [setting],
             collapseButton: false,
