@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable @typescript-eslint/no-shadow */
 /* eslint-disable promise/always-return */
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -6,13 +7,17 @@ import item from '@douyinfe/semi-ui/lib/es/breadcrumb/item';
 import Split from '@uiw/react-split';
 import AppList from 'components/AppList';
 import { useEffect, useState } from 'react';
+import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
+import Column from './column';
+
+import initialData from './initialData';
 
 function Kanban() {
   const [name, setName] = useState<string>();
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [formApi, setFormApi] = useState();
   const [listData, setListData] = useState<any[]>([]);
-  const [kanbanData, setKanbanData] = useState();
+  const [kanbanData, setKanbanData] = useState(initialData);
   const [kanbanObj, setKanbanObj] = useState();
 
   const handleCancel = () => {
@@ -40,7 +45,7 @@ function Kanban() {
         if (data.length > 0) {
           try {
             const item = data[0];
-            setKanbanData(item.data.data);
+            // setKanbanData(item.data.data);
             setKanbanObj({ ...item });
 
             setName(item.name.substring(0, item.name.indexOf('.')));
@@ -52,6 +57,70 @@ function Kanban() {
       }
     });
   }, []);
+
+  const onDragEnd = (result) => {
+    const { destination, source, draggableId } = result;
+
+    if (!destination) {
+      return;
+    }
+
+    if (
+      destination.droppableId === source.droppableId &&
+      destination.index === source.index
+    ) {
+      return;
+    }
+
+    const start = kanbanData.columns[source.droppableId];
+    const finish = kanbanData.columns[destination.droppableId];
+
+    if (start === finish) {
+      const newTaskIds = Array.from(start.taskIds);
+      newTaskIds.splice(source.index, 1);
+      newTaskIds.splice(destination.index, 0, draggableId);
+
+      const newColumn = {
+        ...start,
+        taskIds: newTaskIds,
+      };
+
+      const newState = {
+        ...kanbanData,
+        columns: {
+          ...kanbanData.columns,
+          [newColumn.id]: newColumn,
+        },
+      };
+
+      setKanbanData(newState);
+      return;
+    }
+
+    const startTaskIds = Array.from(start.taskIds);
+    startTaskIds.splice(source.index, 1);
+    const newStart = {
+      ...start,
+      taskIds: startTaskIds,
+    };
+
+    const finishTaskIds = Array.from(finish.taskIds);
+    finishTaskIds.splice(destination.index, 0, draggableId);
+    const newFinish = {
+      ...finish,
+      taskIds: finishTaskIds,
+    };
+
+    const newState = {
+      ...kanbanData,
+      columns: {
+        ...kanbanData.columns,
+        [newStart.id]: newStart,
+        [newFinish.id]: newFinish,
+      },
+    };
+    setKanbanData(newState);
+  };
 
   return (
     <Split
@@ -101,7 +170,7 @@ function Kanban() {
             setModalVisible(true);
           }}
           onSelect={(item: any) => {
-            setKanbanData(item.data.data);
+            // setKanbanData(item.data.data);
             setKanbanObj({ ...item });
             setName(item.name.substring(0, item.name.indexOf('.')));
           }}
@@ -131,7 +200,19 @@ function Kanban() {
           </Col>
         </Row>
         <Divider />
-        context
+
+        <DragDropContext onDragEnd={onDragEnd}>
+          <div style={{ display: 'flex' }}>
+            {kanbanData.columnOrder.map((id) => {
+              const column = kanbanData.columns[id];
+              const tasks = column.taskIds.map(
+                (taskId: string | number) => kanbanData.tasks[taskId]
+              );
+
+              return <Column key={column.id} column={column} tasks={tasks} />;
+            })}
+          </div>
+        </DragDropContext>
       </div>
     </Split>
   );

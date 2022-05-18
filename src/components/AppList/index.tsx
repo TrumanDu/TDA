@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react/prop-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
@@ -9,11 +10,17 @@ import {
   IconKanban,
 } from '@douyinfe/semi-icons';
 import { Row, Col, Button, Input, List, Modal } from '@douyinfe/semi-ui';
-import { useEffect, useState } from 'react';
+import { CompositionEvent, useEffect, useState } from 'react';
 
 import './index.css';
 
-const AppList = ({ onNew, onSelect, dataSource, channel }) => {
+const AppList = (props: {
+  onNew: any;
+  onSelect: any;
+  dataSource: any;
+  channel: string;
+}) => {
+  const { onNew, onSelect, dataSource, channel } = props;
   const [focusIndex, setFocusIndex] = useState<number>();
   const [searchKey, setSearchKey] = useState<string>();
   const [listData, setListData] = useState<[]>([]);
@@ -23,7 +30,10 @@ const AppList = ({ onNew, onSelect, dataSource, channel }) => {
   ) => {
     let newList;
     if (search) {
-      newList = dataSource.filter((item) => item.name.includes(search));
+      newList = dataSource.filter(
+        (item: { name: (string | CompositionEvent<HTMLInputElement>)[] }) =>
+          item.name.includes(search)
+      );
     } else {
       newList = dataSource;
     }
