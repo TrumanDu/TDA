@@ -202,7 +202,7 @@ function Kanban() {
         <Divider />
 
         <DragDropContext onDragEnd={onDragEnd}>
-          <div style={{ display: 'flex' }}>
+          <div style={{ display: 'flex', minHeight: '96%' }}>
             {kanbanData.columnOrder.map((id) => {
               const column = kanbanData.columns[id];
               const tasks = column.taskIds.map(

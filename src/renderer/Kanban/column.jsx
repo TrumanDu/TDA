@@ -2,16 +2,21 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import styled from 'styled-components';
 import { Droppable } from 'react-beautiful-dnd';
+import { IconPlusStroked } from '@douyinfe/semi-icons';
+import { Row, Col, Button, Modal } from '@douyinfe/semi-ui';
 import Task from './task';
 
 const Container = styled.div`
   margin: 8px;
-  border: 1px solid lightgrey;
+  /* border: 1px solid lightgrey; */
   border-radius: 2px;
   width: 33%;
   display: flex;
+  background-color: ${(props) => props.color};
   flex-direction: column;
+  min-height: 50%;
 `;
+
 const Title = styled.h3`
   padding: 8px;
 `;
@@ -25,9 +30,34 @@ const TaskList = styled.div`
 
 const Column = (props) => {
   const { column, tasks } = props;
+
+  const color = () => {
+    if (column.id === 'done') {
+      return '#96f7d2';
+    }
+    if (column.id === 'inProgress') {
+      return '#fff98c';
+    }
+    return '#f5f5f5';
+  };
+
+  const onNew = () => {};
+
   return (
-    <Container>
+    <Container color={color()}>
       <Title>{column.title}</Title>
+      {column.id === 'todo' ? (
+        <Button
+          icon={<IconPlusStroked />}
+          theme="borderless"
+          style={{ marginRight: 10 }}
+          onClick={onNew}
+        >
+          New Task
+        </Button>
+      ) : (
+        <></>
+      )}
       <Droppable droppableId={column.id} type="TASK">
         {(provided, snapshot) => (
           <TaskList
