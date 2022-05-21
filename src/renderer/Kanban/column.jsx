@@ -3,7 +3,7 @@
 import styled from 'styled-components';
 import { Droppable } from 'react-beautiful-dnd';
 import { IconPlusStroked } from '@douyinfe/semi-icons';
-import { Row, Col, Button, Modal } from '@douyinfe/semi-ui';
+import { Row, Col, Button, Modal, Collapse } from '@douyinfe/semi-ui';
 import Task from './task';
 
 const Container = styled.div`
@@ -45,33 +45,56 @@ const Column = (props) => {
 
   return (
     <Container color={color()}>
-      <Title>{column.title}</Title>
-      {column.id === 'todo' ? (
-        <Button
-          icon={<IconPlusStroked />}
-          theme="borderless"
-          style={{ marginRight: 10 }}
-          onClick={onNew}
-        >
-          New Task
-        </Button>
+      {column.id === 'done' ? (
+        <Collapse>
+          <Collapse.Panel header={<Title>{column.title}</Title>} itemKey="1">
+            <Droppable droppableId={column.id} type="TASK">
+              {(provided, snapshot) => (
+                <TaskList
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                  isDraggingOver={snapshot.isDraggingOver}
+                >
+                  {tasks.map((task, index) => (
+                    <Task key={task.id} data={task} index={index} />
+                  ))}
+                  {provided.placeholder}
+                </TaskList>
+              )}
+            </Droppable>
+          </Collapse.Panel>
+        </Collapse>
       ) : (
-        <></>
+        <>
+          <Title>{column.title}</Title>
+          {column.id === 'todo' ? (
+            <Button
+              icon={<IconPlusStroked />}
+              theme="borderless"
+              style={{ marginRight: 10 }}
+              onClick={onNew}
+            >
+              New Task
+            </Button>
+          ) : (
+            <></>
+          )}
+          <Droppable droppableId={column.id} type="TASK">
+            {(provided, snapshot) => (
+              <TaskList
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+                isDraggingOver={snapshot.isDraggingOver}
+              >
+                {tasks.map((task, index) => (
+                  <Task key={task.id} data={task} index={index} />
+                ))}
+                {provided.placeholder}
+              </TaskList>
+            )}
+          </Droppable>
+        </>
       )}
-      <Droppable droppableId={column.id} type="TASK">
-        {(provided, snapshot) => (
-          <TaskList
-            ref={provided.innerRef}
-            {...provided.droppableProps}
-            isDraggingOver={snapshot.isDraggingOver}
-          >
-            {tasks.map((task, index) => (
-              <Task key={task.id} data={task} index={index} />
-            ))}
-            {provided.placeholder}
-          </TaskList>
-        )}
-      </Droppable>
     </Container>
   );
 };
