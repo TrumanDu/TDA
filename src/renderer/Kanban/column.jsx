@@ -67,18 +67,18 @@ const Column = (props) => {
       ) : (
         <>
           <Title>{column.title}</Title>
-          {column.id === 'todo' ? (
-            <Button
-              icon={<IconPlusStroked />}
-              theme="borderless"
-              style={{ marginRight: 10 }}
-              onClick={onNew}
-            >
-              New Task
-            </Button>
-          ) : (
-            <></>
-          )}
+          <Button
+            icon={<IconPlusStroked />}
+            theme="borderless"
+            style={
+              column.id === 'todo'
+                ? { marginRight: 10 }
+                : { marginRight: 10, visibility: 'hidden' }
+            }
+            onClick={onNew}
+          >
+            New Task
+          </Button>
           <Droppable droppableId={column.id} type="TASK">
             {(provided, snapshot) => (
               <TaskList
