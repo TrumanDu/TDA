@@ -37,6 +37,28 @@ function Kanban() {
       });
   };
 
+  const addTask = (value: TaskData) => {
+    const { taskIds } = kanbanData.columns.todo;
+    taskIds.unshift(`${value.id}`);
+    const todo = {
+      id: 'todo',
+      title: 'TODO',
+      taskIds,
+    };
+
+    let tasks = kanbanData.tasks;
+    tasks[`${value.id}`] = value;
+
+    setKanbanData({
+      columnOrder: ['todo', 'inProgress', 'done'],
+      tasks,
+      columns: {
+        ...kanbanData.columns,
+        todo,
+      },
+    });
+  };
+
   useEffect(() => {
     window.electron.ipcRenderer.send('kanban', 'list');
     window.electron.ipcRenderer.on('list-kanban', (data) => {
@@ -213,7 +235,14 @@ function Kanban() {
                 (taskId: string | number) => kanbanData.tasks[taskId]
               );
 
-              return <Column key={column.id} column={column} tasks={tasks} />;
+              return (
+                <Column
+                  key={column.id}
+                  column={column}
+                  tasks={tasks}
+                  newTask={addTask}
+                />
+              );
             })}
           </div>
         </DragDropContext>

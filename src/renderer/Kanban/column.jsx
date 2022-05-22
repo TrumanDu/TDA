@@ -1,3 +1,4 @@
+/* eslint-disable react/destructuring-assignment */
 /* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable react/prop-types */
 import styled from 'styled-components';
@@ -60,9 +61,15 @@ const Column = (props) => {
     formApi
       .validate()
       .then((values) => {
-        window.electron.ipcRenderer.send('kanban', 'new', {
-          name: values.name,
-        });
+        const taskData = {
+          id: new Date().getTime(),
+          title: values.title,
+          description: values.description,
+          urgent: values.urgent,
+          dueDate: values.dueDate,
+          subTask: [],
+        };
+        props.newTask(taskData);
         setModalVisible(false);
         return '';
       })
@@ -107,8 +114,8 @@ const Column = (props) => {
                 style={{ width: '100%' }}
                 rules={[{ required: true, message: 'Urgent is required.' }]}
               >
-                <Form.Select.Option value="0">Normal</Form.Select.Option>
-                <Form.Select.Option value="1">Important</Form.Select.Option>
+                <Form.Select.Option value={0}>Normal</Form.Select.Option>
+                <Form.Select.Option value={1}>Important</Form.Select.Option>
               </Form.Select>
             </Col>
             <Col span={11} offset={1}>
@@ -139,7 +146,8 @@ const Column = (props) => {
                     <Button
                       onClick={() => {
                         addWithInitValue({
-                          name: 'new subtask',
+                          content: 'new subtask',
+                          status: true,
                         });
                       }}
                       icon={<IconPlusStroked />}
@@ -156,7 +164,7 @@ const Column = (props) => {
                         />
                         &nbsp; &nbsp;
                         <Form.Input
-                          field={`${field}[name]`}
+                          field={`${field}[content]`}
                           noLabel
                           style={{ width: '400px', backgroundColor: 'white' }}
                         />

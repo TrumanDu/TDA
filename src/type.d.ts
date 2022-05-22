@@ -7,14 +7,14 @@ declare global {
     data: any;
   };
   type SubTask = {
-    status: number;
+    status: boolean;
     content: string;
   };
   type TaskData = {
     id: number;
-    content: string;
+    title: string;
     description: string;
-    level: number; // 0:normal,1:,2:
+    urgent: number; // 0:normal,1:important
     dueDate: Date;
     subTask: SubTask[];
   };

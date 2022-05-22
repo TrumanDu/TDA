@@ -14,6 +14,7 @@ import {
 import { IconCrossStroked } from '@douyinfe/semi-icons';
 
 import './task.css';
+import moment from 'moment';
 
 const Container = styled.div`
   /*  border: 1px solid lightgrey;
@@ -32,9 +33,10 @@ const Container = styled.div`
 
 const Task = (props: { index: number; data: TaskData }) => {
   const { index, data } = props;
+  console.log(data);
   return (
     <Draggable
-      draggableId={data.id}
+      draggableId={`${data.id}`}
       index={index}
       // isDragDisabled={isDragDisabled}
     >
@@ -58,7 +60,7 @@ const Task = (props: { index: number; data: TaskData }) => {
           >
             <Row>
               <Col span={23}>
-                <h2>{data.content}</h2>
+                <h2>{data.title}</h2>
               </Col>
               <Col span={1}>
                 <Button
@@ -83,12 +85,30 @@ const Task = (props: { index: number; data: TaskData }) => {
             <Row>
               <Col span={24}>
                 <Space wrap spacing={30}>
-                  <Tag color="grey" size="large">
-                    2022-05-21
-                  </Tag>
-                  <Tag color="red" size="large">
-                    Important
-                  </Tag>
+                  {data.dueDate ? (
+                    <Tag
+                      color={
+                        data.dueDate.getTime() < new Date().getTime()
+                          ? 'red'
+                          : 'grey'
+                      }
+                      size="large"
+                    >
+                      {moment(data.dueDate).format('YYYY-MM-DD')}
+                    </Tag>
+                  ) : (
+                    <></>
+                  )}
+
+                  {data.urgent === 0 ? (
+                    <Tag color="blue" size="large">
+                      Normal
+                    </Tag>
+                  ) : (
+                    <Tag color="red" size="large">
+                      Important
+                    </Tag>
+                  )}
                 </Space>
               </Col>
             </Row>
