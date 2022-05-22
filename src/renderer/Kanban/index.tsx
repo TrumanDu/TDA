@@ -7,7 +7,7 @@ import item from '@douyinfe/semi-ui/lib/es/breadcrumb/item';
 import Split from '@uiw/react-split';
 import AppList from 'components/AppList';
 import { useEffect, useState } from 'react';
-import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
+import { DragDropContext } from 'react-beautiful-dnd';
 import Column from './column';
 
 import initialData from './initialData';
@@ -50,7 +50,7 @@ function Kanban() {
 
             setName(item.name.substring(0, item.name.indexOf('.')));
           } catch (error) {
-            console.logo(item);
+            console.log(item);
             console.error(error);
           }
         }
@@ -58,7 +58,11 @@ function Kanban() {
     });
   }, []);
 
-  const onDragEnd = (result) => {
+  const onDragEnd = (result: {
+    destination: any;
+    source: any;
+    draggableId: any;
+  }) => {
     const { destination, source, draggableId } = result;
 
     if (!destination) {
@@ -141,8 +145,8 @@ function Kanban() {
       >
         <Form
           layout="horizontal"
-          getFormApi={(formApi) => {
-            setFormApi(formApi);
+          getFormApi={(api) => {
+            setFormApi(api);
           }}
         >
           <Row>
