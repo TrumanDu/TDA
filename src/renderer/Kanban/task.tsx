@@ -32,8 +32,19 @@ const Container = styled.div`
 `;
 
 const Task = (props: { index: number; data: TaskData }) => {
-  const { index, data } = props;
-  console.log(data);
+  const { index, data, removeTask } = props;
+  let isNeedProgress = false;
+  let completed = 0;
+  let total = 0;
+  if (data.subTask && data.subTask.length > 0) {
+    isNeedProgress = true;
+    total = data.subTask.length;
+    data.subTask.forEach((sub) => {
+      if (sub.status) {
+        completed += 1;
+      }
+    });
+  }
   return (
     <Draggable
       draggableId={`${data.id}`}
@@ -66,21 +77,28 @@ const Task = (props: { index: number; data: TaskData }) => {
                 <Button
                   style={{ display: 'none' }}
                   theme="borderless"
-                  onClick={() => {}}
+                  onClick={() => {
+                    removeTask(data.id);
+                  }}
                   icon={<IconCrossStroked style={{ color: '#474a4d' }} />}
                 />
               </Col>
             </Row>
-            <Row>
-              <Col span={24}>
-                <Progress
-                  percent={10}
-                  stroke="rgba(var(--semi-blue-4), 1)"
-                  showInfo
-                  format={() => '1/10'}
-                />
-              </Col>
-            </Row>
+            {isNeedProgress ? (
+              <Row>
+                <Col span={24}>
+                  <Progress
+                    percent={(completed / total) * 100}
+                    stroke="rgba(var(--semi-blue-4), 1)"
+                    showInfo
+                    format={() => `${completed}/${total}`}
+                  />
+                </Col>
+              </Row>
+            ) : (
+              <></>
+            )}
+
             <br />
             <Row>
               <Col span={24}>
@@ -88,9 +106,7 @@ const Task = (props: { index: number; data: TaskData }) => {
                   {data.dueDate ? (
                     <Tag
                       color={
-                        data.dueDate.getTime() < new Date().getTime()
-                          ? 'red'
-                          : 'grey'
+                        moment(data.dueDate).isBefore(moment()) ? 'red' : 'grey'
                       }
                       size="large"
                     >
@@ -100,13 +116,13 @@ const Task = (props: { index: number; data: TaskData }) => {
                     <></>
                   )}
 
-                  {data.urgent === 0 ? (
-                    <Tag color="blue" size="large">
-                      Normal
-                    </Tag>
-                  ) : (
+                  {data.urgent === 1 ? (
                     <Tag color="red" size="large">
                       Important
+                    </Tag>
+                  ) : (
+                    <Tag color="blue" size="large">
+                      Normal
                     </Tag>
                   )}
                 </Space>

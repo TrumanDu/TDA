@@ -184,7 +184,7 @@ ipcMain.on('kanban', async (event, command, arg) => {
   } */
   if (command === 'new') {
     const pathname = path.join(APPLICATION_PATH, 'Kanban');
-    newKanbanFile(pathname, arg.name);
+    newKanbanFile(pathname, arg.name, arg.data);
   }
   if (command === 'delete') {
     const pathname = path.join(APPLICATION_PATH, 'Kanban');
@@ -194,14 +194,16 @@ ipcMain.on('kanban', async (event, command, arg) => {
   if (command === 'rename') {
     const pathname = path.join(APPLICATION_PATH, 'Kanban');
     // 文件重命名
-    renameFile(pathname, arg.oldname, arg.name, '.mindmap');
-    event.reply('app-notification', 'Rename success!');
+    if (renameFile(pathname, arg.oldname, arg.name, '.kanban')) {
+      event.reply('app-notification', 'Rename success!');
+    }
   }
   if (command === 'edit') {
     const pathname = path.join(APPLICATION_PATH, 'Kanban');
     // 保存数据
-    saveFile(pathname, `${arg.name}.kanban`, arg.data);
-    event.reply('app-notification', 'Save success!');
+    if (saveFile(pathname, `${arg.name}.kanban`, arg.data)) {
+      event.reply('app-notification', 'Save success!');
+    }
   }
   const list = readMindMapFileList(APPLICATION_PATH, 'Kanban');
   if (list) {

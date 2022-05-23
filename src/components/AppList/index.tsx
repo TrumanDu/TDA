@@ -20,7 +20,7 @@ const AppList = (props: {
   channel: string;
 }) => {
   const { onNew, onSelect, dataSource, channel } = props;
-  const [focusIndex, setFocusIndex] = useState<number>();
+  const [focusIndex, setFocusIndex] = useState<number>(0);
   const [searchKey, setSearchKey] = useState<string>();
   const [listData, setListData] = useState<[]>([]);
 
@@ -42,6 +42,7 @@ const AppList = (props: {
 
   useEffect(() => {
     setListData(dataSource);
+    setFocusIndex(0);
   }, [dataSource]);
 
   const handleDelete = (name: string) => {

@@ -67,7 +67,7 @@ const Column = (props) => {
           description: values.description,
           urgent: values.urgent,
           dueDate: values.dueDate,
-          subTask: [],
+          subTask: [...values.effects],
         };
         props.newTask(taskData);
         setModalVisible(false);
@@ -76,6 +76,10 @@ const Column = (props) => {
       .catch((errors) => {
         console.log(errors);
       });
+  };
+
+  const removeTask = (taskId) => {
+    props.removeTask(taskId);
   };
 
   return (
@@ -147,7 +151,7 @@ const Column = (props) => {
                       onClick={() => {
                         addWithInitValue({
                           content: 'new subtask',
-                          status: true,
+                          status: false,
                         });
                       }}
                       icon={<IconPlusStroked />}
@@ -157,11 +161,7 @@ const Column = (props) => {
                     </Button>
                     {arrayFields.map(({ field, key, remove }, i) => (
                       <div key={key} style={{ display: 'flex' }}>
-                        <Form.Checkbox
-                          noLabel
-                          onChange={(checked) => console.log(checked)}
-                          field={`${field}[status]`}
-                        />
+                        <Form.Checkbox noLabel field={`${field}[status]`} />
                         &nbsp; &nbsp;
                         <Form.Input
                           field={`${field}[content]`}
@@ -199,7 +199,12 @@ const Column = (props) => {
                   isDraggingOver={snapshot.isDraggingOver}
                 >
                   {tasks.map((task, index) => (
-                    <Task key={task.id} data={task} index={index} />
+                    <Task
+                      key={task.id}
+                      data={task}
+                      index={index}
+                      removeTask={removeTask}
+                    />
                   ))}
                   {provided.placeholder}
                 </TaskList>
@@ -230,7 +235,12 @@ const Column = (props) => {
                 isDraggingOver={snapshot.isDraggingOver}
               >
                 {tasks.map((task, index) => (
-                  <Task key={task.id} data={task} index={index} />
+                  <Task
+                    key={task.id}
+                    data={task}
+                    index={index}
+                    removeTask={removeTask}
+                  />
                 ))}
                 {provided.placeholder}
               </TaskList>

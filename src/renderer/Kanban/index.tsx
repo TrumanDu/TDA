@@ -1,23 +1,62 @@
 /* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable @typescript-eslint/no-shadow */
 /* eslint-disable promise/always-return */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Modal, Form, Row, Col, Input, Divider } from '@douyinfe/semi-ui';
 import item from '@douyinfe/semi-ui/lib/es/breadcrumb/item';
 import Split from '@uiw/react-split';
 import AppList from 'components/AppList';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { DragDropContext } from 'react-beautiful-dnd';
 import Column from './column';
 
-import initialData from './initialData';
+const initialData = {
+  tasks: {},
+  columns: {
+    todo: {
+      id: 'todo',
+      title: 'TODO',
+      taskIds: [],
+    },
+    inProgress: {
+      id: 'inProgress',
+      title: 'In Progress',
+      taskIds: [],
+    },
+    done: {
+      id: 'done',
+      title: 'Done',
+      taskIds: [],
+    },
+  },
+
+  columnOrder: ['todo', 'inProgress', 'done'],
+};
+
+const findArrayItem = (str: string, array: string[]) => {
+  for (let index = 0; index < array.length; index += 1) {
+    const element = array[index];
+
+    if (element === str) {
+      return index;
+    }
+  }
+
+  return -1;
+};
+
+const saveKanban = (name = 'new', data: TaskData) => {
+  window.electron.ipcRenderer.send('kanban', 'edit', {
+    name,
+    data,
+  });
+};
 
 function Kanban() {
   const [name, setName] = useState<string>();
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [formApi, setFormApi] = useState();
   const [listData, setListData] = useState<any[]>([]);
-  const [kanbanData, setKanbanData] = useState(initialData);
+  const [kanbanData, setKanbanData] = useState();
   const [kanbanObj, setKanbanObj] = useState();
 
   const handleCancel = () => {
@@ -29,6 +68,7 @@ function Kanban() {
       .then((values: any) => {
         window.electron.ipcRenderer.send('kanban', 'new', {
           name: values.name,
+          data: initialData,
         });
         setModalVisible(false);
       })
@@ -46,17 +86,54 @@ function Kanban() {
       taskIds,
     };
 
-    let tasks = kanbanData.tasks;
+    const { tasks } = kanbanData;
     tasks[`${value.id}`] = value;
 
-    setKanbanData({
+    const data = {
       columnOrder: ['todo', 'inProgress', 'done'],
       tasks,
       columns: {
         ...kanbanData.columns,
         todo,
       },
-    });
+    };
+    setKanbanData(data);
+
+    saveKanban(name, data);
+  };
+
+  const removeTask = (taskId: string) => {
+    const { tasks } = kanbanData;
+    delete tasks[`${taskId}`];
+
+    const { todo, inProgress, done } = kanbanData.columns;
+
+    const todoIndex = findArrayItem(taskId, todo.taskIds);
+    if (todoIndex > -1) {
+      todo.taskIds.splice(todoIndex, 1);
+    } else {
+      const inProgressIndex = findArrayItem(taskId, inProgress.taskIds);
+      if (inProgressIndex > -1) {
+        inProgress.taskIds.splice(inProgressIndex, 1);
+      } else {
+        const doneIndex = findArrayItem(taskId, done.taskIds);
+        if (doneIndex > -1) {
+          done.taskIds.splice(doneIndex, 1);
+        }
+      }
+    }
+    const data = {
+      columnOrder: ['todo', 'inProgress', 'done'],
+      tasks,
+      columns: {
+        done,
+        inProgress,
+        todo,
+      },
+    };
+    setKanbanData(data);
+
+    saveKanban(name, data);
   };
 
   useEffect(() => {
@@ -67,7 +144,7 @@ function Kanban() {
         if (data.length > 0) {
           try {
             const item = data[0];
-            // setKanbanData(item.data.data);
+            setKanbanData(item.data.data);
             setKanbanObj({ ...item });
 
             setName(item.name.substring(0, item.name.indexOf('.')));
@@ -120,6 +197,7 @@ function Kanban() {
       };
 
       setKanbanData(newState);
+      saveKanban(name, newState);
       return;
     }
 
@@ -146,6 +224,7 @@ function Kanban() {
       },
     };
     setKanbanData(newState);
+    saveKanban(name, newState);
   };
 
   return (
@@ -196,7 +275,7 @@ function Kanban() {
             setModalVisible(true);
           }}
           onSelect={(item: any) => {
-            // setKanbanData(item.data.data);
+            setKanbanData(item.data.data);
             setKanbanObj({ ...item });
             setName(item.name.substring(0, item.name.indexOf('.')));
           }}
@@ -229,21 +308,26 @@ function Kanban() {
 
         <DragDropContext onDragEnd={onDragEnd}>
           <div style={{ display: 'flex', minHeight: '96%' }}>
-            {kanbanData.columnOrder.map((id) => {
-              const column = kanbanData.columns[id];
-              const tasks = column.taskIds.map(
-                (taskId: string | number) => kanbanData.tasks[taskId]
-              );
+            {kanbanData ? (
+              kanbanData.columnOrder.map((id) => {
+                const column = kanbanData.columns[id];
+                const tasks = column.taskIds.map(
+                  (taskId: string | number) => kanbanData.tasks[taskId]
+                );
 
-              return (
-                <Column
-                  key={column.id}
-                  column={column}
-                  tasks={tasks}
-                  newTask={addTask}
-                />
-              );
-            })}
+                return (
+                  <Column
+                    key={column.id}
+                    column={column}
+                    tasks={tasks}
+                    newTask={addTask}
+                    removeTask={removeTask}
+                  />
+                );
+              })
+            ) : (
+              <></>
+            )}
           </div>
         </DragDropContext>
       </div>
