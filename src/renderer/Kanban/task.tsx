@@ -32,7 +32,7 @@ const Container = styled.div`
 `;
 
 const Task = (props: { index: number; data: TaskData }) => {
-  const { index, data, removeTask } = props;
+  const { index, data, removeTask, showTask } = props;
   let isNeedProgress = false;
   let completed = 0;
   let total = 0;
@@ -60,6 +60,9 @@ const Task = (props: { index: number; data: TaskData }) => {
           isDragging={snapshot.isDragging}
         >
           <Card
+            onClick={() => {
+              showTask(data);
+            }}
             shadows="hover"
             style={{
               backgroundColor: props.isDragDisabled

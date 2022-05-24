@@ -5,7 +5,7 @@ import { Modal, Form, Row, Col, Input, Divider } from '@douyinfe/semi-ui';
 import item from '@douyinfe/semi-ui/lib/es/breadcrumb/item';
 import Split from '@uiw/react-split';
 import AppList from 'components/AppList';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DragDropContext } from 'react-beautiful-dnd';
 import Column from './column';
 
@@ -102,6 +102,22 @@ function Kanban() {
     saveKanban(name, data);
   };
 
+  const editTask = (value: TaskData, taskId: string) => {
+    const { tasks } = kanbanData;
+    tasks[`${taskId}`] = value;
+
+    const data = {
+      columnOrder: ['todo', 'inProgress', 'done'],
+      tasks,
+      columns: {
+        ...kanbanData.columns,
+      },
+    };
+    setKanbanData(data);
+
+    saveKanban(name, data);
+  };
+
   const removeTask = (taskId: string) => {
     const { tasks } = kanbanData;
     delete tasks[`${taskId}`];
@@ -109,6 +125,7 @@ function Kanban() {
     const { todo, inProgress, done } = kanbanData.columns;
 
     const todoIndex = findArrayItem(taskId, todo.taskIds);
+
     if (todoIndex > -1) {
       todo.taskIds.splice(todoIndex, 1);
     } else {
@@ -321,6 +338,7 @@ function Kanban() {
                     column={column}
                     tasks={tasks}
                     newTask={addTask}
+                    editTask={editTask}
                     removeTask={removeTask}
                   />
                 );

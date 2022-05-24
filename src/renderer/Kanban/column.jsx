@@ -3,18 +3,12 @@
 /* eslint-disable react/prop-types */
 import styled from 'styled-components';
 import { Droppable } from 'react-beautiful-dnd';
-import { IconPlusStroked, IconMinusCircle } from '@douyinfe/semi-icons';
-import {
-  Row,
-  Col,
-  Button,
-  Modal,
-  Collapse,
-  Form,
-  ArrayField,
-} from '@douyinfe/semi-ui';
-import { useState } from 'react';
+import { IconPlusStroked } from '@douyinfe/semi-icons';
+import { Button, Collapse } from '@douyinfe/semi-ui';
+import React, { useRef } from 'react';
 import Task from './task';
+import NewTask from './Detail/newTask';
+import EditTask from './Detail/editTask';
 
 const Container = styled.div`
   margin: 8px;
@@ -40,8 +34,8 @@ const TaskList = styled.div`
 
 const Column = (props) => {
   const { column, tasks } = props;
-  const [modalVisible, setModalVisible] = useState(false);
-  const [formApi, setFormApi] = useState();
+  const newTaskRef = useRef();
+  const editTaskRef = useRef();
 
   const color = () => {
     if (column.id === 'done') {
@@ -53,137 +47,26 @@ const Column = (props) => {
     return '#f5f5f5';
   };
 
-  const handleCancel = () => {
-    setModalVisible(false);
+  const addTask = (task) => {
+    props.newTask(task);
   };
-
-  const handleOk = () => {
-    formApi
-      .validate()
-      .then((values) => {
-        const taskData = {
-          id: new Date().getTime(),
-          title: values.title,
-          description: values.description,
-          urgent: values.urgent,
-          dueDate: values.dueDate,
-          subTask: [...values.effects],
-        };
-        props.newTask(taskData);
-        setModalVisible(false);
-        return '';
-      })
-      .catch((errors) => {
-        console.log(errors);
-      });
+  const editTask = (task) => {
+    props.editTask(task, `${task.id}`);
   };
 
   const removeTask = (taskId) => {
-    props.removeTask(taskId);
+    props.removeTask(`${taskId}`);
+  };
+
+  const showTask = (taskData) => {
+    editTaskRef.current.editModalShow(taskData);
   };
 
   return (
     <Container color={color()}>
-      <Modal
-        title="New Task"
-        style={{ width: 600 }}
-        visible={modalVisible}
-        onCancel={handleCancel}
-        onOk={handleOk}
-        okText="Save"
-        cancelText="Cancel"
-      >
-        <Form
-          getFormApi={(api) => {
-            setFormApi(api);
-          }}
-        >
-          <Row>
-            <Col span={24}>
-              <Form.Input
-                field="title"
-                label="Title"
-                trigger="blur"
-                placeholder="Enter task title"
-                rules={[{ required: true, message: 'Title is required.' }]}
-              />
-            </Col>
-          </Row>
-          <Row>
-            <Col span={11}>
-              <Form.Select
-                field="urgent"
-                label="Urgent"
-                placeholder="Please select"
-                style={{ width: '100%' }}
-                rules={[{ required: true, message: 'Urgent is required.' }]}
-              >
-                <Form.Select.Option value={0}>Normal</Form.Select.Option>
-                <Form.Select.Option value={1}>Important</Form.Select.Option>
-              </Form.Select>
-            </Col>
-            <Col span={11} offset={1}>
-              <Form.DatePicker
-                field="dueDate"
-                label="Due Date"
-                motion={false}
-                style={{ width: '250px' }}
-                initValue={new Date()}
-              />
-            </Col>
-          </Row>
-          <Row>
-            <Col span={24}>
-              <Form.TextArea
-                field="description"
-                label="Description"
-                trigger="blur"
-                placeholder="Enter task description"
-              />
-            </Col>
-          </Row>
-          <Row>
-            <Col span={24}>
-              <ArrayField field="effects" initValue={[]}>
-                {({ add, arrayFields, addWithInitValue }) => (
-                  <>
-                    <Button
-                      onClick={() => {
-                        addWithInitValue({
-                          content: 'new subtask',
-                          status: false,
-                        });
-                      }}
-                      icon={<IconPlusStroked />}
-                      theme="light"
-                    >
-                      Add Subtask
-                    </Button>
-                    {arrayFields.map(({ field, key, remove }, i) => (
-                      <div key={key} style={{ display: 'flex' }}>
-                        <Form.Checkbox noLabel field={`${field}[status]`} />
-                        &nbsp; &nbsp;
-                        <Form.Input
-                          field={`${field}[content]`}
-                          noLabel
-                          style={{ width: '400px', backgroundColor: 'white' }}
-                        />
-                        <Button
-                          type="danger"
-                          theme="borderless"
-                          icon={<IconMinusCircle />}
-                          onClick={remove}
-                          style={{ margin: 12 }}
-                        />
-                      </div>
-                    ))}
-                  </>
-                )}
-              </ArrayField>
-            </Col>
-          </Row>
-        </Form>
-      </Modal>
+      <NewTask addTask={addTask} ref={newTaskRef} />
+      <EditTask editTask={editTask} ref={editTaskRef} />
+
       {column.id === 'done' ? (
         <Collapse style={{ height: '98%' }} defaultActiveKey="1">
           <Collapse.Panel
@@ -223,7 +106,9 @@ const Column = (props) => {
                 ? { marginRight: 10 }
                 : { marginRight: 10, visibility: 'hidden' }
             }
-            onClick={() => setModalVisible(true)}
+            onClick={() => {
+              newTaskRef.current.addModalShow();
+            }}
           >
             New Task
           </Button>
@@ -239,6 +124,7 @@ const Column = (props) => {
                     key={task.id}
                     data={task}
                     index={index}
+                    showTask={showTask}
                     removeTask={removeTask}
                   />
                 ))}
