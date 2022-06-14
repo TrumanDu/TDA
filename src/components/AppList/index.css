@@ -1,0 +1,16 @@
+li:hover {
+  background-color: var(--semi-color-fill-0);
+}
+
+li:hover button {
+  display: inline-flex !important;
+}
+.mind-map-list .mind-map-list-focus-item {
+  background-color: var(--semi-color-fill-0);
+}
+.mind-map-list .mind-map-list-focus-item button {
+  display: inline-flex !important;
+}
+.semi-list-item-extra {
+  margin-left: 2px;
+}

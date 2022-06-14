@@ -80,12 +80,12 @@ export const readMindMapFileList = (
     const filePath = path.join(dir, filename);
     if (!dirent.isDirectory()) {
       const stat = fs.statSync(filePath);
-      const data = fs.readFileSync(filePath);
+      const data = fs.readJSONSync(filePath);
 
       list.push({
         name: filename,
         changeMs: stat.ctimeMs,
-        data: JSON.parse(data.toString()),
+        data,
       });
     }
   });
@@ -174,6 +174,31 @@ export const newMindMapFile = (pathname: string, filename: string): boolean => {
   return false;
 };
 
+export const newKanbanFile = (
+  pathname: string,
+  filename: string,
+  data: TaskData
+): boolean => {
+  let name = path.join(pathname, `${filename}.kanban`);
+
+  if (!fs.existsSync(name)) {
+    fs.createFileSync(name);
+    fs.writeJSONSync(name, { data }, 'utf-8');
+    return true;
+  }
+
+  for (let index = 1; index < 65535; index += 1) {
+    name = path.join(pathname, `${filename}(${index}).kanban`);
+    if (!fs.existsSync(name)) {
+      fs.createFileSync(name);
+      fs.writeJSONSync(name, { data }, 'utf-8');
+      return true;
+    }
+  }
+
+  return false;
+};
+
 export const removeFile = (pathname: string, filename: string): boolean => {
   const name = path.join(pathname, filename);
   if (!fs.existsSync(name)) {
@@ -190,6 +215,7 @@ export const renameFile = (
   fileType: string
 ): boolean => {
   const name = path.join(pathname, oldname) + fileType;
+
   if (!fs.existsSync(name)) {
     return false;
   }
@@ -207,7 +233,7 @@ export const saveFile = (
   if (!fs.existsSync(file)) {
     return false;
   }
-  fs.writeJSONSync(file, data);
+  fs.writeJSONSync(file, { data });
   return true;
 };
 

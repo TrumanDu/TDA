@@ -17,6 +17,7 @@ import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 import {
   createDir,
+  newKanbanFile,
   newMindMapFile,
   readFileTree,
   readMindMapFileList,
@@ -100,12 +101,13 @@ const createWindow = async () => {
     },
   });
 
-  mainWindow.loadURL(resolveHtmlPath(''));
+  mainWindow.loadURL(resolveHtmlPath('index.html'));
 
   mainWindow.on('ready-to-show', () => {
     if (!mainWindow) {
       throw new Error('"mainWindow" is not defined');
     }
+    mainWindow.maximize();
     if (process.env.START_MINIMIZED) {
       mainWindow.minimize();
     } else {
@@ -176,6 +178,38 @@ const createWindow = async () => {
     }
   });
 };
+
+ipcMain.on('kanban', async (event, command, arg) => {
+  /* if (command === 'list') {
+  } */
+  if (command === 'new') {
+    const pathname = path.join(APPLICATION_PATH, 'Kanban');
+    newKanbanFile(pathname, arg.name, arg.data);
+  }
+  if (command === 'delete') {
+    const pathname = path.join(APPLICATION_PATH, 'Kanban');
+    removeFile(pathname, arg.name);
+    event.reply('app-notification', 'Delete success!');
+  }
+  if (command === 'rename') {
+    const pathname = path.join(APPLICATION_PATH, 'Kanban');
+    // 文件重命名
+    if (renameFile(pathname, arg.oldname, arg.name, '.kanban')) {
+      event.reply('app-notification', 'Rename success!');
+    }
+  }
+  if (command === 'edit') {
+    const pathname = path.join(APPLICATION_PATH, 'Kanban');
+    // 保存数据
+    if (saveFile(pathname, `${arg.name}.kanban`, arg.data)) {
+      event.reply('app-notification', 'Save success!');
+    }
+  }
+  const list = readMindMapFileList(APPLICATION_PATH, 'Kanban');
+  if (list) {
+    event.reply('list-kanban', list);
+  }
+});
 
 /**
  * Add event listeners...

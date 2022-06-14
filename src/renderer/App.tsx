@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Notification, Button, Layout, Nav, Tooltip } from '@douyinfe/semi-ui';
 import {
-  BrowserRouter as Router,
+  MemoryRouter as Router,
   Routes,
   Route,
   Outlet,
@@ -17,6 +17,8 @@ import {
   IconKanban,
 } from '@douyinfe/semi-icons';
 import { useEffect, useState } from 'react';
+
+import logo from '../../assets/icon.png';
 
 import MindMap from './MindMap';
 import Kanban from './Kanban';
@@ -78,30 +80,30 @@ const AppLayout = () => {
             }, */
             {
               itemKey: '/',
-              text: 'MindMap',
-              icon: <IconFlowChartStroked size="large" />,
+              text: 'Kanban',
+              icon: <IconKanban size="large" />,
               onClick: () => {
                 navigate('/');
                 setSelectKey(['/']);
               },
             },
             {
-              itemKey: '/kanban',
-              text: 'Kanban',
-              icon: <IconKanban size="large" />,
+              itemKey: '/mindMap',
+              text: 'MindMap',
+              icon: <IconFlowChartStroked size="large" />,
               onClick: () => {
-                navigate('/kanban');
-                setSelectKey(['/kanban']);
+                navigate('/mindMap');
+                setSelectKey(['/mindMap']);
               },
             },
           ]}
-          /* header={{
+          header={{
             logo: (
               // eslint-disable-next-line jsx-a11y/alt-text
               <img src={logo} />
             ),
             text: 'TrumanDu Assistant',
-          }} */
+          }}
           footer={{
             children: [setting],
             collapseButton: false,
@@ -119,10 +121,10 @@ export default function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<AppLayout />}>
+        <Route path="/*" element={<AppLayout />}>
           {/*   <Route index element={<Home />} /> */}
-          <Route index element={<MindMap />} />
-          <Route path="kanban" element={<Kanban />} />
+          <Route path="mindMap" element={<MindMap />} />
+          <Route index element={<Kanban />} />
         </Route>
       </Routes>
     </Router>

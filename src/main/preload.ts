@@ -19,6 +19,7 @@ contextBridge.exposeInMainWorld('electron', {
         'ipc-example',
         'list-tree-file',
         'list-mind-map-file',
+        'list-kanban',
         'app-notification',
       ];
       if (validChannels.includes(channel)) {

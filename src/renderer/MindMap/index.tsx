@@ -99,7 +99,7 @@ function MindMap() {
   const [mindMapData, setMindMapData] = useState(newMindObj.data);
 
   const reloadGraphin = () => {
-    window.location.reload();
+    // window.location.reload();
   };
 
   const handleChange = (menuItem: any, menuData: any) => {
